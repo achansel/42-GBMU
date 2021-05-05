@@ -258,6 +258,7 @@ inline void CPU::execute_next_instruction()
             /* AND A, u8 */
             case 0xE6:
                 AND_IMM8()
+                break;
 
             /* LD RR, IMM16 */
             case 0x01:
@@ -470,7 +471,7 @@ inline void CPU::execute_next_instruction()
                 ADD_A_ADDR_HL();
                 break;
 
-            /* ADD HL, DE
+            /* ADD HL, DE */
 
             /* ADD A, r opcodes */
             case 0x80: case 0x81: case 0x82: case 0x83: case 0x84: case 0x85: case 0x87:

@@ -12,13 +12,12 @@ Cartridge::Cartridge(const std::string& path_to_game) {
         std::cerr << "Error opening file '" << path_to_game << "'" << std::endl;
         exit(1);
     }
-    std::ifstream::pos_type pos = ifs.tellg();
-    rom_size = pos;
+    std::ifstream::pos_type rom_size = ifs.tellg();
 
-    m_rom = (u8*) malloc(pos);
+    m_rom = (u8*) malloc(rom_size);
 
     ifs.seekg(0, std::ios::beg);
-    ifs.read((char*) m_rom, pos);
+    ifs.read((char*) m_rom, rom_size);
 }
 
 Cartridge::~Cartridge()

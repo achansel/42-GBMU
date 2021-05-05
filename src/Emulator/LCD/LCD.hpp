@@ -26,7 +26,7 @@ public:
     void write_byte_at_oam(u8 memory_loc, u8 value);
 
     void reset();
-    void updatetile(u16 addr, u8 value);
+    void updatetile(u16 addr);
     void renderscan();
 
     bool need_to_draw = false;

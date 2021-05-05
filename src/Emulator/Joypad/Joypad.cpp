@@ -18,7 +18,7 @@ u8 Joypad::read_byte()
     {
         case 0x10: return m_rows[0];
         case 0x20: return m_rows[1];
-        default:   break;
+        default:   return 0;
     }
 }
 
@@ -50,6 +50,8 @@ void Joypad::key_down(sf::Event e)
         case sf::Keyboard::Down:
             m_rows[1] &= 0x7;
             break;
+        default:
+            break;
     }
 }
 
@@ -79,6 +81,8 @@ void Joypad::key_up(sf::Event e)
             break;
         case sf::Keyboard::Down:
             m_rows[1] |= 0x8;
+            break;
+        default:
             break;
     }
 }

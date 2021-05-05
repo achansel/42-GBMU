@@ -1,5 +1,7 @@
 #pragma once
 
+/* TODO: Rewrite using inline functions, make the registers C++ Objects */
+
 #include "Emulator/Util/Bitwise.hpp"
 
 /* Useful enums def */
@@ -8,7 +10,8 @@ enum ComposedRegister {RegisterBC = 0x01, RegisterDE = 0x23, RegisterHL = 0x45, 
 enum Flag {ZeroFlag = 7, SubstractFlag = 6, HalfCarryFlag = 5, CarryFlag = 4};
 enum CallJumpFlag {NZ = 0x00, NC = 0x10, Z = 0x01, C = 0x11};
 
-/* ALL VARIABLES REUSED THREW THE MACROS */
+/* TODO: Fix that too */
+/* ALL VARIABLES REUSED THROUGHOUT THE MACROS */
 /* NOT ELEGANT BUT QUICK */
 
 int carry, carrybits, result;
@@ -271,14 +274,16 @@ u8 tempread;
 #define JR_R8() \
                     PC += 2; \
                     tclock += 4; \
-                    _JUMP(PC + m_emu->get_MMU().get_signed_byte_at(PC-1)) \
+                    _JUMP(PC + m_emu->get_MMU().get_signed_byte_at(PC-1))
 
 #define JR_R8_COND() \
                     tclock += 8; \
                     PC += 2; \
                     flags = MAKE_CALL_JUMP_FLAG(); \
                     if ((flags == NZ && !GET_FLAG(ZeroFlag)) || (flags == Z && GET_FLAG(ZeroFlag)) || (flags == NC && !GET_FLAG(CarryFlag)) || (flags == C && GET_FLAG(CarryFlag))) \
-                        _JUMP(PC + m_emu->get_MMU().get_signed_byte_at(PC-1))
+                    { \
+                        _JUMP(PC + m_emu->get_MMU().get_signed_byte_at(PC-1)); \
+                    }
 
 #define CALL_U16() \
                     tclock += 12; \
@@ -931,3 +936,4 @@ u8 tempread;
                 temp = m_emu->get_MMU().get_byte_at(GET_COMPOSED_REG(RegisterHL)); \
                 SET_BIT(temp, GET_TARGET_BIT(0x80, op), 1); \
                 m_emu->get_MMU().set_byte_at(GET_COMPOSED_REG(RegisterHL), temp);
+

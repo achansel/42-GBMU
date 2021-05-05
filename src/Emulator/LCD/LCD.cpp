@@ -158,7 +158,7 @@ void LCD::reset() {
 }
 
 
-void LCD::updatetile(u16 addr, u8 value) {
+void LCD::updatetile(u16 addr) {
     addr &= 0x1FFE;
 
     int tile = (addr >> 4) & 511;

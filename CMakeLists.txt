@@ -14,7 +14,7 @@ endmacro()
 cmake_minimum_required(VERSION 3.13)
 project(EGBoy VERSION 1.0.0 LANGUAGES CXX)
 add_executable(EGBoy)
-target_compile_features(EGBoy PRIVATE cxx_std_17)
+target_compile_features(EGBoy PRIVATE cxx_std_20)
 #set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 #set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 

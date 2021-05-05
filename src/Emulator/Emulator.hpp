@@ -30,13 +30,12 @@ public:
     Cartridge& get_cartridge();
     Joypad& get_joypad();
 private:
-    sf::RenderWindow render_window;
-
-    CPU m_cpu;
-    MMU m_mmu;
-    Joypad m_joypad;
-    LCD m_lcd;
     Cartridge m_cartridge;
+    MMU m_mmu;
+    CPU m_cpu;
+    Joypad m_joypad;
+    sf::RenderWindow render_window;
+    LCD m_lcd;
 };
 
 
