@@ -62,7 +62,7 @@ u8 ROMOnly::get_byte_at(u16 memory_location)
                         switch (memory_location & 0x00F0)
                         {
                             // LCD QUICK DONE LOL
-                            case 0x40: case 0x50:
+                            case 0x40:
                                 return m_emu->get_lcd().read_byte(memory_location);
                             default:
                                 return 0; 
@@ -125,7 +125,7 @@ void ROMOnly::set_byte_at(u16 memory_location, u8 value)
                         switch (memory_location & 0x00F0)
                         {
                             // LCD QUICK DONE LOL
-                            case 0x40: case 0x50:
+                            case 0x40:
                                 m_emu->get_lcd().write_byte(memory_location, value);
                                 break;
                         }
