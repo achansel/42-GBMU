@@ -18,11 +18,16 @@ void MMU::set_memory_rule(int memrule)
 
 u8 MMU::get_byte_at(u16 memory_location)
 {
+    //if (memory_location >= 0x100 && memory_location < 0xff00)
+    //    std::cout << "Requested byte read at: " << std::hex << memory_location << std::endl;
     if (memory_location < 0x100)
     {
         return dmg_bios[memory_location];
     }
-    return mem_controller->get_byte_at(memory_location);
+    u8 byte = mem_controller->get_byte_at(memory_location);
+    //if (memory_location >= 0x100 && memory_location < 0xff00)
+    //    std::cout << "And the byte is : " << std::hex << (unsigned int) byte << std::endl;
+    return (byte);
 }
 
 s8 MMU::get_signed_byte_at(u16 memory_location) {

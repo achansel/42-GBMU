@@ -7,24 +7,55 @@ Emulator::Emulator(const std::string& path_to_game):
     m_mmu(this),
     m_cpu(this),
     m_joypad(),
-    render_window(sf::VideoMode(480, 432), "Gameboy Emulator"),
     m_lcd()
 {
+    int rendererFlags;
+	rendererFlags = SDL_RENDERER_ACCELERATED;
+
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	{
+		printf("Couldn't initialize SDL: %s\n", SDL_GetError());
+		exit(1);
+	}
+
+	m_window = SDL_CreateWindow("GBMU", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 160 * 3, 144 * 3, 0);
+	if (!m_window)
+	{
+		printf("Failed to open %d x %d window: %s\n", 160*3, 144*3, SDL_GetError());
+		exit(1);
+	}
+
+	m_renderer = SDL_CreateRenderer(m_window, -1, rendererFlags);
+	if (!m_renderer)
+	{
+		printf("Failed to create renderer: %s\n", SDL_GetError());
+        exit(1);
+	}
+
+    m_framebuffer = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, 160, 144);
+    if (!m_framebuffer)
+    {
+        printf("Failed to create texture: %s\n", SDL_GetError());
+        exit(1);
+
+    }
+
+    m_mmu.set_memory_rule(m_cartridge.get_cart_type());
+}
+
+Emulator::~Emulator()
+{
+    SDL_DestroyTexture(m_framebuffer);
+    SDL_DestroyWindow(m_window);
+    SDL_Quit();
 }
 
 void Emulator::run() {
-    m_mmu.set_memory_rule(m_cartridge.get_cart_type());
-    while (render_window.isOpen() && !m_cpu.m_exit)
+    m_lcd.reset();
+    while (!m_cpu.m_exit)
     {
-        sf::Event e;
-        while (render_window.pollEvent(e))
-        {
-            if (e.type == sf::Event::EventType::Closed) render_window.close();
-            m_joypad.update(e);
-        }
         m_cpu.tick();
         draw_frame();
-        render_window.clear(sf::Color::Magenta);
     }
     //m_mmu.dumpmem();
 }
@@ -33,18 +64,20 @@ void Emulator::draw_frame()
 {
     if (m_lcd.need_to_draw)
     {
-        sf::Image image = m_lcd.draw();
-        sf::Texture tex;
-        tex.loadFromImage(image, sf::IntRect(0, 0, 160, 144));
-        sf::Sprite sprite;
-        sprite.setTexture(tex);
-        sprite.setScale(sf::Vector2f(3.0f, 3.0f));
+        SDL_Event e;
+        while (SDL_PollEvent(&e))
+        {
+            if (e.type == SDL_QUIT) return ;
+            if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) m_joypad.update(e);
+        }
 
-        render_window.draw(sprite);
-        render_window.display();
+        SDL_UpdateTexture(m_framebuffer, NULL, m_lcd.get_fb(), 160 * sizeof(uint32_t));
+
+        SDL_RenderClear(m_renderer);
+        SDL_RenderCopy(m_renderer, m_framebuffer, NULL, NULL);
+        SDL_RenderPresent(m_renderer);
 
         m_lcd.need_to_draw = false;
-
         m_cpu.tclock = 0;
     }
 }

@@ -12,7 +12,7 @@ Cartridge::Cartridge(const std::string& path_to_game) {
         std::cerr << "Error opening file '" << path_to_game << "'" << std::endl;
         exit(1);
     }
-    std::ifstream::pos_type rom_size = ifs.tellg();
+    rom_size = ifs.tellg();
 
     m_rom = (u8*) malloc(rom_size);
 
@@ -31,7 +31,8 @@ int Cartridge::get_cart_type()
 }
 
 u8 Cartridge::read_byte(u16 memory_loc) {
-    return memory_loc >= rom_size ? 0: m_rom[memory_loc];
+    //std::cout << "Cartridge::read_byte -> U16: " << std::hex << memory_loc << std::endl;
+    return memory_loc >= rom_size ? 0 : m_rom[memory_loc];
 }
 
 u8 Cartridge::read_byte_at_ext_ram(u16 memory_loc) {

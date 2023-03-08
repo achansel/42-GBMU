@@ -24,7 +24,7 @@ public:
     void set_word_at(u16 memory_location, u16 value);
 private:
     std::unique_ptr<MemoryController> mem_controller = nullptr;
-	std::array<u8, 0x80> m_zero_page_ram{};
+	//std::array<u8, 0x80> m_zero_page_ram{};
     Emulator* m_emu;
 
     u8 dmg_bios[0x100] = {

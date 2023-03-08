@@ -4,7 +4,6 @@
 #include <array>
 #include <cstdio>
 
-#include <SFML/Graphics.hpp>
 #include "../Util/Types.hpp"
 
 enum Mode
@@ -17,7 +16,7 @@ public:
     LCD();
 
     void update(u8 t);
-    sf::Image& draw();
+    void *get_fb();
 
     u8 read_byte(u16 memory_loc);
     u8 read_byte_at_oam(u8 memory_loc);
@@ -29,11 +28,10 @@ public:
     void updatetile(u16 addr);
     void renderscan();
 
+    void render_tile(int tile_idx, int start_x, int start_y);
+
     bool need_to_draw = false;
 private:
-    sf::Image to_render;
-
-
 	std::array<u8, 8192> m_video_ram{0};
 	std::array<u8, 160> m_oam{0};
 
@@ -45,8 +43,7 @@ private:
     u8 m_scx, m_scy;
     u8 m_pal[4][4];
 
-    u8 m_tileset[384][8][8];
-
+    u8 m_tileset[512][8][8];
 };
 
 

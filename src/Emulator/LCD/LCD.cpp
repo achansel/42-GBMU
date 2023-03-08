@@ -6,7 +6,7 @@ LCD::LCD()
 
 void LCD::update(u8 t) 
 {
-    if (m_switchlcd == true) 
+    if (m_switchlcd) 
     {
         m_modeclock += t;
 
@@ -52,9 +52,22 @@ void LCD::update(u8 t)
     }
 }
 
-sf::Image& LCD::draw() {
-    to_render.create(160, 144, m_framebuffer);
-    return to_render;
+#include <iostream>
+
+void    *LCD::get_fb() {
+    // DEBUG, RENDER TILEMAP ON SCREEN
+    /*
+    for (int i = 0; i < 512; i++) {
+        for (int j = 0; j < 8; j++) {
+            for (int k = 0; k < 8; k++) {
+                std::cout << (unsigned short) m_tileset[i][j][k];
+            }
+        }
+        std::cout << " ";
+    }
+    std::cout << "\n";
+    */
+    return (m_framebuffer);
 }
 
 u8 LCD::read_byte(u16 memory_loc) {
@@ -148,7 +161,7 @@ void LCD::write_byte_at_oam(u8 memory_loc, u8 value) {
 }
 
 void LCD::reset() {
-    for (int i = 0; i < 383; i++) {
+    for (int i = 0; i < 512; i++) {
         for (int j = 0; j < 8; j++) {
             for (int k = 0; k < 8; k++) {
                 m_tileset[i][j][k] = 0;
@@ -159,52 +172,54 @@ void LCD::reset() {
 
 
 void LCD::updatetile(u16 addr) {
-    addr &= 0x1FFE;
+    addr &= 0x17FF;
 
     int tile = (addr >> 4) & 511;
-    int y = (addr >> 1) & 7;
+    int     y = (addr >> 1) & 7;
 
-    int sx;
-    for(int x = 0; x < 8; x++)
+    for (int x = 0; x < 8; x++)
     {
-        sx = 1 << (7 - x);
-        m_tileset[tile][y][x] =
-                static_cast<u8>(((m_video_ram[addr] & sx)         ? 1 : 0) +
-                                ((m_video_ram[addr + 1] & sx)     ? 2 : 0));
+        // get nth bit at addr and addr + 1 to determine the color in the palette
+        unsigned char bitmask = 1 << (7 - x);
+        m_tileset[tile][y][x] = static_cast<u8>(((m_video_ram[addr]     & bitmask) ? 1 : 0) +
+                                                ((m_video_ram[addr + 1] & bitmask) ? 2 : 0));
     }
 
 }
 
-void LCD::renderscan() {
+void LCD::renderscan()
+{
+    // select right background map
     int map_offset = m_bgmap ? 0x1C00 : 0x1800;
+
+    // >> 3 -> divide by 8 to select right tile,
+    // << 5 -> multiply by 32 to skip n tiles instead of n bytes
     map_offset += (((m_line + m_scy) & 255) >> 3) << 5;
 
-    int line_offset = (m_scx >> 3);
-    u8 y = (m_line + m_scy) & 7;
-    u8 x = m_scx & 7;
+    int line_offset = m_scx >> 3;
+    u8            y = (m_line + m_scy) & 7;
+    u8            x = m_scx & 7;
 
-    int canvas_offset = (m_line - 1) * 160 * 4;
+    int framebuffer_offset = (m_line - 1) * 160 * 4;
 
-    u8 colour[4];
     unsigned short tile = m_video_ram[map_offset + line_offset];
 
     for (size_t i = 0; i < 160; i++)
     {
-
         // Re-map the tile pixel through the palette
+        u8 colour[4];
         colour[0] = m_pal[m_tileset[tile][y][x]][0];
         colour[1] = m_pal[m_tileset[tile][y][x]][1];
         colour[2] = m_pal[m_tileset[tile][y][x]][2];
         colour[3] = m_pal[m_tileset[tile][y][x]][3];
 
         // Plot the pixel to canvas
-        m_framebuffer[canvas_offset+0] = colour[0];
-        m_framebuffer[canvas_offset+1] = colour[1];
-        m_framebuffer[canvas_offset+2] = colour[2];
-        m_framebuffer[canvas_offset+3] = colour[3];
+        m_framebuffer[framebuffer_offset++] = colour[0];
+        m_framebuffer[framebuffer_offset++] = colour[1];
+        m_framebuffer[framebuffer_offset++] = colour[2];
+        m_framebuffer[framebuffer_offset++] = colour[3];
 
-        canvas_offset += 4;
-
+        // Go to next tile
         x++;
         if (x == 8)
         {

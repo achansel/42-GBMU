@@ -38,7 +38,8 @@ if (CMAKE_BUILD_TYPE STREQUAL Release)
   target_compile_options(EGBoy PRIVATE -Wall -O3 -s)
 else()
   # When compiling as debug
-  target_compile_options(EGBoy PRIVATE -Wall -Wextra -Werror -g)
+  target_compile_options(EGBoy PRIVATE -Wall -Wextra -Werror -g -fsanitize=address)
+  target_link_options(EGBoy PRIVATE -g -fsanitize=address)
   target_compile_definitions(EGBoy PRIVATE -DDBG)
 endif()
 
@@ -60,12 +61,14 @@ target_sources(EGBoy PRIVATE
             ${SOURCE_FOLDER}/Emulator/Memory/MemoryController/ROMOnly.cpp
             ${SOURCE_FOLDER}/Emulator/Memory/Cartridge/Cartridge.cpp)
 
-# Find SMFL
-#set(SFML_STATIC_LIBRARIES TRUE)
-find_package(SFML 2.5.1 COMPONENTS system window graphics network audio)
+# Find SDL
+find_package(SDL2 REQUIRED)
 
-# Link against SFML
-target_link_libraries(EGBoy sfml-graphics sfml-window sfml-audio sfml-network sfml-system)
+#il faut inclure de dossier ${SDL2_INCLUDE_DIR} où il y a les .h de SDL
+include_directories(${SDL2_INCLUDE_DIRS})
+
+# Link against SDL
+target_link_libraries(EGBoy ${SDL2_LIBRARIES})
 
 # Copy res dir
 file(TO_CMAKE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/res" LOC_PATH)

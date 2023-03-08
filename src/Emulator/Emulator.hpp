@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include <SFML/Graphics.hpp>
+#include <SDL.h>
 
 #include "CPU/CPU.hpp"
 #include "Memory/MMU.hpp"
@@ -18,6 +18,7 @@
 class Emulator {
 public:
     Emulator(const std::string& path_to_game);
+    ~Emulator();
 
     void run();
     void reset();
@@ -34,8 +35,11 @@ private:
     MMU m_mmu;
     CPU m_cpu;
     Joypad m_joypad;
-    sf::RenderWindow render_window;
     LCD m_lcd;
+
+   	SDL_Renderer    *m_renderer;
+	SDL_Window      *m_window;
+    SDL_Texture     *m_framebuffer;
 };
 
 

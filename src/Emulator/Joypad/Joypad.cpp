@@ -1,10 +1,10 @@
 #include <iostream>
 #include "Joypad.hpp"
 
-void Joypad::update(sf::Event e)
+void Joypad::update(SDL_Event e)
 {
-    if (e.type == sf::Event::EventType::KeyPressed) key_down(e);
-    if (e.type == sf::Event::EventType::KeyReleased)  key_up(e);
+    if (e.type == SDL_KEYDOWN)  key_down(e);
+    if (e.type == SDL_KEYUP)    key_up(e);
 }
 
 void Joypad::write_byte(u8 value)
@@ -12,6 +12,7 @@ void Joypad::write_byte(u8 value)
     m_column = static_cast<u8>(value & 0x30);
 }
 
+// TODO: FIX A BUG??
 u8 Joypad::read_byte()
 {
     switch (m_column)
@@ -22,32 +23,32 @@ u8 Joypad::read_byte()
     }
 }
 
-void Joypad::key_down(sf::Event e)
+void Joypad::key_down(SDL_Event e)
 {
-    switch (e.key.code)
+    switch (e.key.keysym.sym)
     {
-        case sf::Keyboard::S:
+        case SDLK_s:
             m_rows[0] &= 0xE; // A gameboy key
             break;
-        case sf::Keyboard::X:
+        case SDLK_x:
             m_rows[0] &= 0xD; // B gameboy key
             break;
-        case sf::Keyboard::Space:
+        case SDLK_SPACE:
             m_rows[0] &= 0xB; // SELECT gameboy key
             break;
-        case sf::Keyboard::Return:
+        case SDLK_RETURN:
             m_rows[0] &= 0x7; // ENTER gameboy key
             break;
-        case sf::Keyboard::Right:
+        case SDLK_RIGHT:
             m_rows[1] &= 0xE;
             break;
-        case sf::Keyboard::Left:
+        case SDLK_LEFT:
             m_rows[1] &= 0xD;
             break;
-        case sf::Keyboard::Up:
+        case SDLK_UP:
             m_rows[1] &= 0xB;
             break;
-        case sf::Keyboard::Down:
+        case SDLK_DOWN:
             m_rows[1] &= 0x7;
             break;
         default:
@@ -55,31 +56,31 @@ void Joypad::key_down(sf::Event e)
     }
 }
 
-void Joypad::key_up(sf::Event e)
+void Joypad::key_up(SDL_Event e)
 {
-    switch (e.key.code) {
-        case sf::Keyboard::S:
+    switch (e.key.keysym.sym) {
+        case SDLK_s:
             m_rows[0] |= 0x1; // A gameboy key
             break;
-        case sf::Keyboard::X:
+        case SDLK_x:
             m_rows[0] |= 0x2; // B gameboy key
             break;
-        case sf::Keyboard::Space:
+        case SDLK_SPACE:
             m_rows[0] |= 0x4; // SELECT gameboy key
             break;
-        case sf::Keyboard::Return:
+        case SDLK_RETURN:
             m_rows[0] |= 0x8; // ENTER gameboy key
             break;
-        case sf::Keyboard::Right:
+        case SDLK_RIGHT:
             m_rows[1] |= 0x1;
             break;
-        case sf::Keyboard::Left:
+        case SDLK_LEFT:
             m_rows[1] |= 0x2;
             break;
-        case sf::Keyboard::Up:
+        case SDLK_UP:
             m_rows[1] |= 0x4;
             break;
-        case sf::Keyboard::Down:
+        case SDLK_DOWN:
             m_rows[1] |= 0x8;
             break;
         default:
