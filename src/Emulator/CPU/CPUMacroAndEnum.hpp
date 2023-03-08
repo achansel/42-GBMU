@@ -268,8 +268,7 @@ u8 tempread;
 
 #define JUMP_A16() \
                     tclock += 12; \
-                    _JUMP(m_emu->get_MMU().get_word_at(PC+1)); \
-                    PC += 3;
+                    _JUMP(m_emu->get_MMU().get_word_at(PC+1));
 
 #define JR_R8() \
                     PC += 2; \
