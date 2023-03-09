@@ -6,15 +6,10 @@ class Emulator;
 #include <memory>
 #include <cstdio>
 #include "../Util/Types.hpp"
-#include "Emulator/Memory/MemoryController/MemoryController.hpp"
-
-enum class MemoryRule {ROMONLY = 0x00};
 
 class MMU {
 public:
     MMU(Emulator *emu);
-
-    void set_memory_rule(int memrule);
 
     u8 get_byte_at(u16 memory_location);
     s8 get_signed_byte_at(u16 memory_location);
@@ -22,10 +17,11 @@ public:
 
     void set_byte_at(u16 memory_location, u8 value);
     void set_word_at(u16 memory_location, u16 value);
+
+    Emulator				*m_emu;
+	bool					m_bios_mapped;
 private:
-    std::unique_ptr<MemoryController> mem_controller = nullptr;
-	//std::array<u8, 0x80> m_zero_page_ram{};
-    Emulator* m_emu;
+	std::array<u8, 0x80>	m_zero_page_ram {};
 
     u8 dmg_bios[0x100] = {
         0x31, 0xfe, 0xff, 0xaf, 0x21, 0xff, 0x9f, 0x32, 0xcb, 0x7c, 0x20, 0xfb,
