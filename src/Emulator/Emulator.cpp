@@ -39,12 +39,11 @@ Emulator::Emulator(const std::string& path_to_game):
         exit(1);
 
     }
-
-    m_mmu.set_memory_rule(m_cartridge.get_cart_type());
 }
 
 Emulator::~Emulator()
 {
+	std::cout << "~Emulator(void) was called\n\n";
     SDL_DestroyTexture(m_framebuffer);
     SDL_DestroyWindow(m_window);
     SDL_Quit();

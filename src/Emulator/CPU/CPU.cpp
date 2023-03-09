@@ -24,6 +24,25 @@ void CPU::tick()
     step_lcd();
 }
 
+void CPU::debug_stop()
+{
+	#ifndef NDEBUG
+		std::cout << "GBMU: CPU FATAL:" << std::endl;
+		printf("\tREGS: A: 0x%02X, B:0x%02X, C:0x%02X, D:0x%02X, E:0x%02X, H:0x%02X, L:0x%02X, F:0x%02X\n\t\tSP:0x%04X, PC:0x%04X\n", GET_REG(RegisterA), GET_REG(RegisterB), GET_REG(RegisterC), GET_REG(RegisterD), GET_REG(RegisterE), GET_REG(RegisterH), GET_REG(RegisterL), GET_REG(RegisterF), SP, PC);
+		printf("\tHALTED OPCODE (could be wrong lol) (NOT XCUTED): %02X\n", m_emu->get_MMU().get_byte_at(PC));
+		std::cout << "\tat " << std::hex << SP << ": " << m_emu->get_MMU().get_word_at(SP) << std::endl;
+		std::cout << "\tat " << std::hex << SP + 2 << ": " << m_emu->get_MMU().get_word_at(SP + 2) << std::endl;
+		std::cout << "\tat " << std::hex << SP + 4 << ": " << m_emu->get_MMU().get_word_at(SP + 4) << std::endl;
+		std::cout << "\tat " << std::hex << SP + 6 << ": " << m_emu->get_MMU().get_word_at(SP + 6) << std::endl;
+		std::cout << "\tat " << std::hex << SP + 8 << ": " << m_emu->get_MMU().get_word_at(SP + 8) << std::endl;
+		std::cout << "\tat " << std::hex << SP + 10 << ": " << m_emu->get_MMU().get_word_at(SP + 10) << std::endl;
+		std::cout << "\tat " << std::hex << SP + 12 << ": " << m_emu->get_MMU().get_word_at(SP + 12) << std::endl;
+
+		exit(1);
+	#endif
+
+}
+
 inline void CPU::step_lcd()
 {
     m_emu->get_lcd().update(tclock);
@@ -353,6 +372,9 @@ inline void CPU::execute_next_instruction()
             case 0xEA:
                 LD_ADDR_U16_A()
                 break;
+			case 0xFA:
+				LD_A_ADDR_U16()
+				break;
 
             /* ADD HL, RR */
             case 0x09:
@@ -385,9 +407,34 @@ inline void CPU::execute_next_instruction()
                 LD_A_ADDR_HLD()
                 break;
 
+			case 0xE9:
+				JUMP_HL()
+				break;
+
+			//TODO: Maybe implement with LD_R_ADDR_HL macro that auto detects the register
+            case 0x66:
+                LD_H_ADDR_HL()
+                break; 
+            case 0x56:
+                LD_D_ADDR_HL()
+                break; 
+            case 0x46:
+                LD_B_ADDR_HL()
+                break; 
+
             case 0x7E:
                 LD_A_ADDR_HL()
                 break; 
+            case 0x6E:
+                LD_L_ADDR_HL()
+                break; 
+            case 0x5E:
+                LD_E_ADDR_HL()
+                break; 
+            case 0x4E:
+                LD_C_ADDR_HL()
+                break; 
+
 
             case 0xF0:
                 LD_A_FF00_IMM8()
@@ -522,13 +569,23 @@ inline void CPU::execute_next_instruction()
             case 0xFE:
                 CP_IMM8()
                 break;
+			
+			/* RST xx */
+			case 0xCF: case 0xDF: case 0xEF: case 0xFF:
+				RST_XX();
+				break;
+
+			/* DI AND EI */
+			case 0xF3:
+				DI()
+				break;
+			case 0xFB:
+				EI()
+				break;
 
             default:
+				debug_stop();
                 m_exit = true;
-                #ifndef NDEBUG
-                    std::cout << "Undefined opcode: " << std::hex << +opcode << std::endl;
-                    printf("Register states: \nA: 0x%02X, B:0x%02X, C:0x%02X, D:0x%02X, E:0x%02X, H:0x%02X, L:0x%02X, F:0x%02X\nSP:0x%04X, PC:0x%04X\n", GET_REG(RegisterA), GET_REG(RegisterB), GET_REG(RegisterC), GET_REG(RegisterD), GET_REG(RegisterE), GET_REG(RegisterH), GET_REG(RegisterL), GET_REG(RegisterF), SP, PC);
-                #endif
                 break;
         }
     }

@@ -119,9 +119,40 @@ u8 tempread;
                     _LD_R_8(RegisterA, m_emu->get_MMU().get_byte_at((0xFF00 + m_emu->get_MMU().get_byte_at(PC+1)))); \
                     tclock += 8; PC+=1;
 
+
+#define	LD_A_ADDR_U16() \
+                    tclock += 4; \
+                    _LD_R_8(RegisterA, m_emu->get_MMU().get_byte_at(m_emu->get_MMU().get_byte_at(PC+1))); \
+					tclock += 8; PC+=2;
+
+
 #define LD_A_ADDR_HL() \
                     tclock += 4; \
                     _LD_R_8(RegisterA, m_emu->get_MMU().get_byte_at(GET_COMPOSED_REG(RegisterHL)));
+
+#define LD_B_ADDR_HL() \
+                    tclock += 4; \
+                    _LD_R_8(RegisterB, m_emu->get_MMU().get_byte_at(GET_COMPOSED_REG(RegisterHL)));
+
+#define LD_C_ADDR_HL() \
+                    tclock += 4; \
+                    _LD_R_8(RegisterC, m_emu->get_MMU().get_byte_at(GET_COMPOSED_REG(RegisterHL)));
+
+#define LD_D_ADDR_HL() \
+                    tclock += 4; \
+                    _LD_R_8(RegisterD, m_emu->get_MMU().get_byte_at(GET_COMPOSED_REG(RegisterHL)));
+
+#define LD_E_ADDR_HL() \
+                    tclock += 4; \
+                    _LD_R_8(RegisterE, m_emu->get_MMU().get_byte_at(GET_COMPOSED_REG(RegisterHL)));
+
+#define LD_H_ADDR_HL() \
+                    tclock += 4; \
+                    _LD_R_8(RegisterH, m_emu->get_MMU().get_byte_at(GET_COMPOSED_REG(RegisterHL)));
+
+#define LD_L_ADDR_HL() \
+                    tclock += 4; \
+                    _LD_R_8(RegisterL, m_emu->get_MMU().get_byte_at(GET_COMPOSED_REG(RegisterHL)));
 
 #define LD_A_ADDR_HLI() \
                     tclock += 4; \
@@ -263,6 +294,8 @@ u8 tempread;
                     _POP(RegisterAF)
 
 #define _JUMP(addr) \
+					if ((addr == 0x38 || addr == 0x39 || addr >= 0x8000 || addr == 0x69f0) && !m_emu->get_MMU().m_bios_mapped) \
+						debug_stop(); \
                     PC = addr; \
                     tclock += 4; 
 
@@ -283,6 +316,9 @@ u8 tempread;
                     { \
                         _JUMP(PC + m_emu->get_MMU().get_signed_byte_at(PC-1)); \
                     }
+
+#define JUMP_HL() \
+					_JUMP(GET_COMPOSED_REG(RegisterHL));
 
 #define CALL_U16() \
                     tclock += 12; \
@@ -314,7 +350,7 @@ u8 tempread;
 
 #define _AND(v) \
                     SET_REG(RegisterA, v & GET_REG(RegisterA)); \
-                    SET_FLAG(ZeroFlag, !!GET_REG(RegisterA)); \
+                    SET_FLAG(ZeroFlag, !GET_REG(RegisterA)); \
                     SET_FLAG(SubstractFlag, 0); \
                     SET_FLAG(HalfCarryFlag, 1); \
                     SET_FLAG(CarryFlag, 0); \
@@ -334,7 +370,7 @@ u8 tempread;
 
 #define _XOR(v) \
                     SET_REG(RegisterA, v ^ GET_REG(RegisterA)); \
-                    SET_FLAG(ZeroFlag, !!GET_REG(RegisterA)); \
+                    SET_FLAG(ZeroFlag, !GET_REG(RegisterA)); \
                     SET_FLAG(SubstractFlag, 0); \
                     SET_FLAG(HalfCarryFlag, 0); \
                     SET_FLAG(CarryFlag, 0); \
@@ -354,7 +390,7 @@ u8 tempread;
 
 #define _OR(v) \
                     SET_REG(RegisterA, v | GET_REG(RegisterA)); \
-                    SET_FLAG(ZeroFlag, !!GET_REG(RegisterA)); \
+                    SET_FLAG(ZeroFlag, !GET_REG(RegisterA)); \
                     SET_FLAG(SubstractFlag, 0); \
                     SET_FLAG(HalfCarryFlag, 0); \
                     SET_FLAG(CarryFlag, 0); \
@@ -396,7 +432,7 @@ u8 tempread;
                     result = GET_REG(RegisterA) + v; \
                     carrybits = GET_REG(RegisterA) ^ v ^ result; \
                     SET_REG(RegisterA, static_cast<u8>(result)); \
-                    SET_FLAG(ZeroFlag, !!result); \
+                    SET_FLAG(ZeroFlag, !GET_REG(RegisterA)); \
                     SET_FLAG(SubstractFlag, 0); \
                     SET_FLAG(HalfCarryFlag, !!(carrybits & 0x10)); \
                     SET_FLAG(CarryFlag, !!(carrybits & 0x100)); \
@@ -434,7 +470,7 @@ u8 tempread;
 #define _ADC_A(v) \
                     carry = GET_FLAG(CarryFlag); \
                     result = GET_REG(RegisterA) + v + carry; \
-                    SET_FLAG(ZeroFlag, !!result); \
+                    SET_FLAG(ZeroFlag, !static_cast<u8>(result)); \
                     SET_FLAG(SubstractFlag, 0); \
                     SET_FLAG(HalfCarryFlag, ((GET_REG(RegisterA) & 0xF) + (v & 0xF) + carry) > 0xF); \
                     SET_FLAG(CarryFlag, result > 0xFF); \
@@ -457,7 +493,7 @@ u8 tempread;
                     result = GET_REG(RegisterA) - v; \
                     carrybits = GET_REG(RegisterA) ^ v ^ result; \
                     SET_REG(RegisterA, static_cast<u8>(result)); \
-                    SET_FLAG(ZeroFlag, !!result); \
+                    SET_FLAG(ZeroFlag, !GET_REG(RegisterA)); \
                     SET_FLAG(SubstractFlag, 1); \
                     SET_FLAG(HalfCarryFlag, !!(carrybits & 0x10)); \
                     SET_FLAG(CarryFlag, !!(carrybits & 0x100)); \
@@ -477,7 +513,7 @@ u8 tempread;
 #define _SBC_A(v) \
                     carry = GET_FLAG(CarryFlag); \
                     result = GET_REG(RegisterA) - v - carry; \
-                    SET_FLAG(ZeroFlag, !!result); \
+                    SET_FLAG(ZeroFlag, !static_cast<u8>(result)); \
                     SET_FLAG(SubstractFlag, 1); \
                     SET_FLAG(HalfCarryFlag, ((GET_REG(RegisterA) & 0xF) - (v & 0xF) - carry) < 0); \
                     SET_FLAG(CarryFlag, result < 0); \
@@ -691,6 +727,23 @@ u8 tempread;
 		SET_FLAG(SubstractFlag, 1); \
 		PC += 1; \
 		tclock += 4;
+
+#define DI() \
+		m_ime = false; \
+		PC += 1; \
+		tclock += 4;
+
+#define EI() \
+		m_ime = true; \
+		PC += 1; \
+		tclock += 4;
+
+#define RST_XX() \
+		PC += 1; \
+		tclock += 4; \
+		_PUSH(PC); \
+        _JUMP(( (m_emu->get_MMU().get_byte_at(PC-1) & 0xF0) - 0xC0) + 0x08); \
+
 
 /*********************************************************************/
 /*                              OPCODES CB                           */
