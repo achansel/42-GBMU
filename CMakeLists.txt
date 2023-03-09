@@ -38,8 +38,8 @@ if (CMAKE_BUILD_TYPE STREQUAL Release)
   target_compile_options(EGBoy PRIVATE -Wall -O3 -s)
 else()
   # When compiling as debug
-  target_compile_options(EGBoy PRIVATE -Wall -Wextra -Werror -g -fsanitize=address)
-  target_link_options(EGBoy PRIVATE -g -fsanitize=address)
+  target_compile_options(EGBoy PRIVATE -Wall -Wextra -Werror) #-g -fsanitize=address)
+  target_link_options(EGBoy PRIVATE) #-g -fsanitize=address)
   target_compile_definitions(EGBoy PRIVATE -DDBG)
 endif()
 
@@ -58,7 +58,6 @@ target_sources(EGBoy PRIVATE
             ${SOURCE_FOLDER}/Emulator/Joypad/Joypad.cpp
             ${SOURCE_FOLDER}/Emulator/LCD/LCD.cpp
             ${SOURCE_FOLDER}/Emulator/Memory/MMU.cpp
-            ${SOURCE_FOLDER}/Emulator/Memory/MemoryController/ROMOnly.cpp
             ${SOURCE_FOLDER}/Emulator/Memory/Cartridge/Cartridge.cpp)
 
 # Find SDL
