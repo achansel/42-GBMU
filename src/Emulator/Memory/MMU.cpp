@@ -131,6 +131,9 @@ void MMU::set_byte_at(u16 memory_location, u8 value) {
                         m_emu->get_lcd().write_byte_at_oam(memory_location & 0x9F, value);
                         break;
                 case 0xF00:
+					// SERIAL OUTPUT
+					if (memory_location == 0xFF01)
+						std::cout << (char) value;
 					// UNMAP BIOS
 					if (memory_location == 0xFF50)
 					{

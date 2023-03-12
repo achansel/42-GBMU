@@ -1,6 +1,5 @@
-#include "CPU.hpp"
-#include "Emulator/Emulator.hpp"
-#include "Emulator/CPU/CPUMacroAndEnum.hpp"
+#include <Emulator/CPU/CPU.hpp>
+#include <Emulator/Emulator.hpp>
 
 CPU::CPU(Emulator* emu)
 {
@@ -12,8 +11,7 @@ void CPU::saveafterinstruction()
 {
     if (savestate == nullptr)
         savestate = fopen("states.bin", "wb");
-    fwrite((void*)regs, sizeof(u8), 8, savestate);
-    fwrite((void*)&SP, sizeof(u16), 1, savestate);
+    fwrite((void*)regs, sizeof(u8), 10, savestate);
     fwrite((void*)&PC, sizeof(u16), 1, savestate);
 }
 
@@ -28,6 +26,7 @@ void CPU::debug_stop()
 {
 	#ifndef NDEBUG
 		std::cout << "GBMU: CPU FATAL:" << std::endl;
+		u16 SP = GET_COMPOSED_REG(RegisterSP);
 		printf("\tREGS: A: 0x%02X, B:0x%02X, C:0x%02X, D:0x%02X, E:0x%02X, H:0x%02X, L:0x%02X, F:0x%02X\n\t\tSP:0x%04X, PC:0x%04X\n", GET_REG(RegisterA), GET_REG(RegisterB), GET_REG(RegisterC), GET_REG(RegisterD), GET_REG(RegisterE), GET_REG(RegisterH), GET_REG(RegisterL), GET_REG(RegisterF), SP, PC);
 		printf("\tHALTED OPCODE (could be wrong lol) (NOT XCUTED): %02X\n", m_emu->get_MMU().get_byte_at(PC));
 		std::cout << "\tat " << std::hex << SP << ": " << m_emu->get_MMU().get_word_at(SP) << std::endl;
@@ -45,7 +44,7 @@ void CPU::debug_stop()
 
 inline void CPU::step_lcd()
 {
-    m_emu->get_lcd().update(tclock);
+    m_emu->get_lcd().update(m_tclock);
 }
 
 inline void CPU::execute_next_instruction()

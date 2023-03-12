@@ -77,7 +77,7 @@ void Emulator::draw_frame()
         SDL_RenderPresent(m_renderer);
 
         m_lcd.need_to_draw = false;
-        m_cpu.tclock = 0;
+        m_cpu.m_tclock = 0;
     }
 }
 
