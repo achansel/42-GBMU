@@ -140,16 +140,8 @@ void MMU::set_byte_at(u16 memory_location, u8 value) {
 					if (memory_location == 0xFF01)
 						std::cout << (char) value;
 					// UNMAP BIOS
-					if (memory_location == 0xFF50)
+					if (memory_location == 0xFF50 && m_bios_mapped)
 					{
-						// std::cout << "Write to FF50 with value " << std::hex << +value << std::endl;
-						// std::cout << "Instruction address " << std::hex << m_emu->get_CPU().PC - 1 << std::endl;
-						// std::cout << "Data there " << std::hex << +get_byte_at(m_emu->get_CPU().PC - 1) << std::endl << std::endl;
-						// if (value == 0x00)
-						// {
-						// 	for (u32 sp = m_emu->get_CPU().SP; sp < 0x10000; sp += 2)
-						// 		std::cout << "at " << std::hex << sp << ": " << get_word_at(sp) << std::endl;
-						// }
 						m_bios_mapped = !value;
 					}
                     // ZERO PAGE RAM

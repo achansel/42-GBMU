@@ -4,6 +4,7 @@
 /*
 	ACTUAL INSTRUCTIONS
 */
+/*
 void	CPU::RLC_A() 		{ SET_REG(RegisterA, RLC(GET_REG(RegisterA))); }
 void	CPU::RLC_B() 		{ SET_REG(RegisterB, RLC(GET_REG(RegisterB))); }
 void	CPU::RLC_C() 		{ SET_REG(RegisterC, RLC(GET_REG(RegisterC))); }
@@ -103,3 +104,4 @@ void	CPU::SET_N_E()		{ SET_REG(RegisterE, SET_N_8(GET_TARGET_BIT(0xC0, m_opcode)
 void	CPU::SET_N_H()		{ SET_REG(RegisterH, SET_N_8(GET_TARGET_BIT(0xC0, m_opcode), GET_REG(RegisterH))); }
 void	CPU::SET_N_L()		{ SET_REG(RegisterL, SET_N_8(GET_TARGET_BIT(0xC0, m_opcode), GET_REG(RegisterL))); }
 void	CPU::SET_N_ADDR_HL(){ u16 HL = GET_COMPOSED_REG(RegisterHL); WRITE_BYTE(HL, SET_N_8(GET_TARGET_BIT(0xC0, m_opcode), GET_BYTE(HL))); }
+*/

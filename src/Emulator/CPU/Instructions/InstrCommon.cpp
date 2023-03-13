@@ -49,6 +49,7 @@ ALWAYS_INLINE u16 CPU::FETCH_WORD()
 
 	u16 w = m_emu->get_MMU().get_word_at(PC);
 	PC += 2;
+
 	return (w);
 }
 ALWAYS_INLINE u8 CPU::GET_BYTE(u16 address)
