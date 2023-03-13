@@ -53,6 +53,12 @@ void Emulator::run() {
     m_lcd.reset();
     while (!m_cpu.m_exit)
     {
+        SDL_Event e;
+        while (SDL_PollEvent(&e))
+        {
+            if (e.type == SDL_QUIT) return ;
+            if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) m_joypad.update(e);
+        }
         m_cpu.tick();
         draw_frame();
     }
@@ -63,13 +69,6 @@ void Emulator::draw_frame()
 {
     if (m_lcd.need_to_draw)
     {
-        SDL_Event e;
-        while (SDL_PollEvent(&e))
-        {
-            if (e.type == SDL_QUIT) return ;
-            if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) m_joypad.update(e);
-        }
-
         SDL_UpdateTexture(m_framebuffer, NULL, m_lcd.get_fb(), 160 * sizeof(uint32_t));
 
         SDL_RenderClear(m_renderer);

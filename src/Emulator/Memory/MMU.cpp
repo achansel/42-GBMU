@@ -61,6 +61,8 @@ u8 MMU::get_byte_at(u16 memory_location)
                     {
                         return m_zero_page_ram[memory_location & 0x7F];
                     }
+					else if (memory_location == 0xFF00)
+						return m_emu->get_joypad().read_byte();
                     // IO REGS
                     else
                     {
@@ -70,16 +72,16 @@ u8 MMU::get_byte_at(u16 memory_location)
                             case 0x40:
                                 return m_emu->get_lcd().read_byte(memory_location);
                             default:
-                                return 0; 
+                                return 0x0; 
                         }
                     }
                 default:
-                    return 0;
+                    return 0xFF;
             }
 
         // We didn't match any case
         default:
-            return 0;
+            return 0xFF;
     }        
 }
 
@@ -89,10 +91,11 @@ s8 MMU::get_signed_byte_at(u16 memory_location) {
 
 u16 MMU::get_word_at(u16 memory_location)
 {
-    return Bitwise::compose_bytes(get_byte_at(memory_location+1), get_byte_at(memory_location));
+    return Bitwise::compose_word(get_byte_at(memory_location+1), get_byte_at(memory_location));
 }
 
 void MMU::set_byte_at(u16 memory_location, u8 value) {
+	//std::cout << "GBMU: MMU: Memory write at " << std::hex << memory_location << ": " << +value << std::endl;
     switch (memory_location & 0xF000)
     {
         // Video Ram (8K)
@@ -131,6 +134,8 @@ void MMU::set_byte_at(u16 memory_location, u8 value) {
                         m_emu->get_lcd().write_byte_at_oam(memory_location & 0x9F, value);
                         break;
                 case 0xF00:
+					if (memory_location == 0xFF00)
+						m_emu->get_joypad().write_byte(value);
 					// SERIAL OUTPUT
 					if (memory_location == 0xFF01)
 						std::cout << (char) value;

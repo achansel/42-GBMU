@@ -1,56 +1,4 @@
 #include <Emulator/CPU/CPU.hpp>
-#include <Emulator/CPU/Instructions/InstrCommon.hpp>
-
-/*
-	MICRO-INSTRUCTIONS (if its called this way)
-*/
-// ADC, SBC, ADD, SUB
-template<typename SUB, typename CARRY>
-ALWAYS_INLINE void CPU::ADD_A_8(u8 operand)	
-{
-	m_tclock += 4; PC++;
-
-	u16 res = GET_FLAG(CarryFlag) * CARRY + operand * (SUB * -1) + GET_REG(RegisterA);
-	SET_FLAG(ZeroFlag, res == 0);
-	SET_FLAG(SubstractFlag, SUB);
-	SET_FLAG(HalfCarryFlag, (res >> 4) & 1);
-	SET_FLAG(CarryFlag, (res >> 8) & 1);
-	SET_REG(RegisterA, static_cast<u8>(res));
-}
-ALWAYS_INLINE void CPU::ADD_REG16_REG16(u8 dst, u8 src)
-{
-	m_tclock += 8; PC++;
-
-	u32 res = GET_COMPOSED_REG(dst) + GET_COMPOSED_REG(src);
-	SET_FLAG(SubstractFlag, 0);
-	SET_FLAG(HalfCarryFlag, (res >> 8) & 1);
-	SET_FLAG(CarryFlag, (res >> 16) & 1);
-	SET_COMPOSED_REG(dst, static_cast<u16>(res));
-}
-ALWAYS_INLINE void CPU::ADC(u8 operand)			{ ADD_A_8<0, 1>(operand); }
-ALWAYS_INLINE void CPU::SBC(u8 operand)			{ ADD_A_8<1, 1>(operand); }
-ALWAYS_INLINE void CPU::ADD(u8 operand)			{ ADD_A_8<0, 0>(operand); }
-ALWAYS_INLINE void CPU::SUB(u8 operand)			{ ADD_A_8<1, 0>(operand); }
-ALWAYS_INLINE void CPU::DEC_REG16(u8 reg) 		{ m_tclock += 8; PC++; DEC_COMPOSED_REG(src); }
-ALWAYS_INLINE void CPU::INC_REG16(u8 reg) 		{ m_tclock += 8; PC++; INC_COMPOSED_REG(src); }
-ALWAYS_INLINE void CPU::DEC_REG8(u8 reg)  		{ m_tclock += 4; PC++; DEC_REG(src); SET_FLAG(ZeroFlag, GET_REG(src) == 0); SET_FLAG(SubstractFlag, 1); SET_FLAG(HalfCarryFlag, (GET_REG(src) >> 4) & 1); }
-ALWAYS_INLINE void CPU::INC_REG8(u8 reg) 		{ m_tclock += 4; PC++; INC_REG(src); SET_FLAG(ZeroFlag, GET_REG(src) == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, (GET_REG(src) >> 4) & 1); }
-ALWAYS_INLINE void CPU::DEC_ADDR(u16 address)	{ m_tclock += 4; PC++; u8 b = GET_BYTE(address) - 1; SET_FLAG(ZeroFlag, b == 0); SET_FLAG(SubstractFlag, 1); SET_FLAG(HalfCarryFlag, (b >> 4) & 1); SET_BYTE(address, b); }
-ALWAYS_INLINE void CPU::INC_ADDR(u16 address)	{ m_tclock += 4; PC++; u8 b = GET_BYTE(address) + 1; SET_FLAG(ZeroFlag, b == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, (b >> 4) & 1); SET_BYTE(address, b); }
-
-ALWAYS_INLINE void CPU::AND(u8 operand)			{ m_tclock += 4; PC++; u8 a = GET_REG(RegisterA) & operand; SET_REG(RegisterA, a); SET_FLAG(ZeroFlag, a == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, 1); SET_FLAG(CarryFlag, 0); }
-ALWAYS_INLINE void CPU::XOR(u8 operand)			{ m_tclock += 4; PC++; u8 a = GET_REG(RegisterA) ^ operand; SET_REG(RegisterA, a); SET_FLAG(ZeroFlag, a == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, 0); SET_FLAG(CarryFlag, 0); }
-ALWAYS_INLINE void CPU::OR(u8 operand)			{ m_tclock += 4; PC++; u8 a = GET_REG(RegisterA) | operand; SET_REG(RegisterA, a); SET_FLAG(ZeroFlag, a == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, 0); SET_FLAG(CarryFlag, 0); }
-ALWAYS_INLINE void CPU::CP(u8 operand)
-{
-	m_tclock += 4; PC++;
-
-	u8 a = GET_REG(RegisterA);
-	SET_FLAG(ZeroFlag, a == operand);
-	SET_FLAG(SubstractFlag, 1);
-	SET_FLAG(HalfCarryFlag, ((a - operand) & 0xF) > (a & 0xF));
-	SET_FLAG(CarryFlag, a < operand);
-}
 
 /*
 	ALL THE INC,DEC INSTRUCTIONS
@@ -65,9 +13,9 @@ void CPU::DEC_L()								{ DEC_REG8(RegisterL); }
 void CPU::DEC_ADDR_HL()							{ DEC_ADDR(GET_COMPOSED_REG(RegisterHL)); }
 
 void CPU::DEC_BC()								{ DEC_REG16(RegisterBC); }
-void CPU::DEC_DE()								{ DEC_REG16(RegisterBC); }
-void CPU::DEC_HL()								{ DEC_REG16(RegisterBC); }
-void CPU::DEC_SP()								{ DEC_REG16(RegisterBC); }
+void CPU::DEC_DE()								{ DEC_REG16(RegisterDE); }
+void CPU::DEC_HL()								{ DEC_REG16(RegisterHL); }
+void CPU::DEC_SP()								{ DEC_REG16(RegisterSP); }
 
 void CPU::INC_A()								{ INC_REG8(RegisterA); }
 void CPU::INC_B()								{ INC_REG8(RegisterB); }
@@ -79,9 +27,9 @@ void CPU::INC_L()								{ INC_REG8(RegisterL); }
 void CPU::INC_ADDR_HL()							{ INC_ADDR(GET_COMPOSED_REG(RegisterHL)); }
 
 void CPU::INC_BC()								{ INC_REG16(RegisterBC); }
-void CPU::INC_DE()								{ INC_REG16(RegisterBC); }
-void CPU::INC_HL()								{ INC_REG16(RegisterBC); }
-void CPU::INC_SP()								{ INC_REG16(RegisterBC); }
+void CPU::INC_DE()								{ INC_REG16(RegisterDE); }
+void CPU::INC_HL()								{ INC_REG16(RegisterHL); }
+void CPU::INC_SP()								{ INC_REG16(RegisterSP); }
 
 /*
 	ALL THE SBC, ADC, SUB, ADD INSTRUCTIONS
@@ -203,13 +151,13 @@ void CPU::DAA()
 		if (GET_FLAG(CarryFlag) || a > 0x99)
 		{
 			a += 0x60;
-			SET_FLAG(CarryFlag);
+			SET_FLAG(CarryFlag, 1);
 		}
 		if (GET_FLAG(HalfCarryFlag) || ((a & 0x0F) > 0x09))
 			a += 0x6;
 	}
 	SET_FLAG(ZeroFlag, a == 0);
-	SET_FLAG(HalfCarry, 0);
+	SET_FLAG(HalfCarryFlag, 0);
 
 	SET_REG(RegisterA, a);
 }

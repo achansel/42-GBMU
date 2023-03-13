@@ -1,12 +1,4 @@
 #include <Emulator/CPU/CPU.hpp>
-#include <Emulator/CPU/Instructions/InstrCommon.hpp>
-
-/*
-	MICRO-INSTRUCTIONS (if its called this way)
-*/
-ALWAYS_INLINE void CPU::_JUMP(u16 address)	{ m_tclock += 4; PC = address; }
-ALWAYS_INLINE void CPU::_RET()				{ m_tclock += 4; u16 sp = GET_COMPOSED_REG(RegisterSP); PC = GET_WORD(sp); SET_COMPOSED_REG(RegisterSP, sp + 2); }
-ALWAYS_INLINE void CPU::_CALL(u16 address)	{ u16 sp = GET_COMPOSED_REG(RegisterSP) - 2; WRITE_WORD(sp, PC); SET_COMPOSED_REG(RegisterSP, sp); _JUMP(address); }
 
 /*
 	ALL THE CONTROL INSTRUCTIONS

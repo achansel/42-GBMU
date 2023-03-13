@@ -1,5 +1,4 @@
 #include <Emulator/CPU/CPU.hpp>
-#include <Emulator/CPU/InstrCommon.hpp>
 
 /*
 	MICRO-INSTRUCTIONS (if its called this way)
@@ -20,7 +19,7 @@ ALWAYS_INLINE void CPU::MOV_REG16_IMM16(u8 dst)				{ MOV_REG_16(dst, this->FETCH
 ALWAYS_INLINE void CPU::MOV_REG8_ADDR(u8 dst, u16 address)	{ MOV_REG_8(dst, this->GET_BYTE(address)); }
 
 ALWAYS_INLINE void CPU::POP_REG16(u8 dst)					{ u16 sp = GET_COMPOSED_REG(RegisterSP); MOV_REG_16(dst, this->GET_WORD(sp)); sp += 2; SET_COMPOSED_REG(RegisterSP, sp); }
-ALWAYS_INLINE void CPU::PUSH_REG16(u8 src)					{ u16 sp = GET_COMPOSED_REG(RegisterSP) - 2; SET_COMPOSED_REG(RegisterSP, sp); m_tclock += 4; MOV_ADDR_REG16(sp, GET_COMPOSED_REG(src)); }
+ALWAYS_INLINE void CPU::PUSH_REG16(u8 src)					{ u16 sp = GET_COMPOSED_REG(RegisterSP) - 2; SET_COMPOSED_REG(RegisterSP, sp); m_tclock += 4; MOV_ADDR_REG16(sp, src); }
 
 /*
 	ALL THE LD INSTRUCTIONS

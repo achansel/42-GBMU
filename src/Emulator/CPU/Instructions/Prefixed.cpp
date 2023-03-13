@@ -1,132 +1,4 @@
 #include <Emulator/CPU/CPU.hpp>
-#include <Emulator/CPU/Instructions/InstrCommon.hpp>
-
-/*
-	MICRO-INSTRUCTIONS (if its called this way)
-*/
-u8 CPU::RLC(u8 operand)
-{
-	m_tclock += 4; PC++;
-
-	u8 a = operand;
-	a = (a << 1) | (a >> 7);
-
-	SET_FLAG(ZeroFlag, a == 0);
-	SET_FLAG(SubstractFlag, 0);
-	SET_FLAG(HalfCarryFlag, 0);
-	SET_FLAG(CarryFlag, (a >> 0) & 1);
-
-	return (a);
-}
-
-u8 CPU::RRC(u8 operand)
-{
-	m_tclock += 4; PC++;
-
-	u8 a = operand;
-	a = (a >> 1) | (a << 7);
-
-	SET_FLAG(ZeroFlag, a == 0);
-	SET_FLAG(SubstractFlag, 0);
-	SET_FLAG(HalfCarryFlag, 0);
-	SET_FLAG(CarryFlag, (a >> 7) & 1); //maybe wrong swap & 1 and & 0x80
-
-	return (a);
-}
-
-u8 CPU::RL(u8 operand)
-{
-	m_tclock += 4; PC++;
-
-	u8 a = operand;
-	a = (a << 1) | (GET_FLAG(CarryFlag) << 0);
-
-	SET_FLAG(ZeroFlag, a == 0);
-	SET_FLAG(SubstractFlag, 0);
-	SET_FLAG(HalfCarryFlag, 0);
-	SET_FLAG(CarryFlag, (operand >> 7) & 1); //maybe wrong swap & 1 and & 0x80
-
-	return (a);
-}
-
-u8 CPU::RR(u8 operand)
-{
-	m_tclock += 4; PC++;
-
-	u8 a = operand;
-	a = (a >> 1) | (GET_FLAG(CarryFlag) << 7);
-
-	SET_FLAG(ZeroFlag, a == 0);
-	SET_FLAG(SubstractFlag, 0);
-	SET_FLAG(HalfCarryFlag, 0);
-	SET_FLAG(CarryFlag, operand & 1); //maybe wrong swap & 1 and & 0x80
-
-	return (a);
-}
-
-u8 CPU::SRA(u8 operand)
-{
-    m_tclock += 4; PC++;
-
-    u8 a = operand;
-    a = (a >> 1) | (a & 0x80);
-
-    SET_FLAG(ZeroFlag, a == 0);
-    SET_FLAG(SubstractFlag, 0);
-    SET_FLAG(HalfCarryFlag, 0);
-    SET_FLAG(CarryFlag, operand & 0x01);
-
-    return a;
-}
-
-u8 CPU::SLA(u8 operand)
-{
-    m_tclock += 4; PC++;
-
-    u8 a = operand;
-    a = ((a << 1) & ~0x80) | (a & 0x80);
-
-    SET_FLAG(ZeroFlag, a == 0);
-    SET_FLAG(SubstractFlag, 0);
-    SET_FLAG(HalfCarryFlag, 0);
-    SET_FLAG(CarryFlag, (operand >> 7) & 0x01);
-
-    return a;
-}
-
-u8 CPU::SWAP(u8 operand)
-{
-    m_tclock += 4; PC++;
-
-    u8 a = operand;
-    a = (a >> 4) | ((a & 0xf) << 4);
-
-    SET_FLAG(ZeroFlag, a == 0);
-    SET_FLAG(SubstractFlag, 0);
-    SET_FLAG(HalfCarryFlag, 0);
-    SET_FLAG(CarryFlag, 0);
-
-    return a;
-}
-
-
-u8 CPU::SRL(u8 operand)
-{
-    m_tclock += 4; PC++;
-
-    u8 a = operand;
-    a <<= 1;
-
-    SET_FLAG(ZeroFlag, a == 0);
-    SET_FLAG(SubstractFlag, 0);
-    SET_FLAG(HalfCarryFlag, 0);
-    SET_FLAG(CarryFlag, (operand >> 7) & 0x01);
-
-    return a;
-}
-void	CPU::BIT_N_8(u8 bit, u8 val) { m_tclock += 4; PC++;	SET_FLAG(ZeroFlag, (val >> bit) & 1); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, 1); }
-u8		CPU::RES_N_8(u8 bit, u8 val) { m_tclock += 4; PC++;	return (val & ~(1 << bit)); }
-u8		CPU::SET_N_8(u8 bit, u8 val) { m_tclock += 4; PC++;	return (val | (1 << bit)); }
 
 
 /*
@@ -205,29 +77,29 @@ void	CPU::SWAP_H() 		{ SET_REG(RegisterH, SWAP(GET_REG(RegisterH))); }
 void	CPU::SWAP_L() 		{ SET_REG(RegisterL, SWAP(GET_REG(RegisterL))); }
 void	CPU::SWAP_ADDR_HL()	{ u16 HL = GET_COMPOSED_REG(RegisterHL); WRITE_BYTE(HL, SWAP(GET_BYTE(HL))); }
 
-void	CPU::BIT_N_A()		{ BIT_N_8(GET_TARGET_BIT(0x40, GET_BYTE(PC)), GET_REG(RegisterA)); }
-void	CPU::BIT_N_B()		{ BIT_N_8(GET_TARGET_BIT(0x40, GET_BYTE(PC)), GET_REG(RegisterB)); }
-void	CPU::BIT_N_C()		{ BIT_N_8(GET_TARGET_BIT(0x40, GET_BYTE(PC)), GET_REG(RegisterC)); }
-void	CPU::BIT_N_D()		{ BIT_N_8(GET_TARGET_BIT(0x40, GET_BYTE(PC)), GET_REG(RegisterD)); }
-void	CPU::BIT_N_E()		{ BIT_N_8(GET_TARGET_BIT(0x40, GET_BYTE(PC)), GET_REG(RegisterE)); }
-void	CPU::BIT_N_H()		{ BIT_N_8(GET_TARGET_BIT(0x40, GET_BYTE(PC)), GET_REG(RegisterH)); }
-void	CPU::BIT_N_L()		{ BIT_N_8(GET_TARGET_BIT(0x40, GET_BYTE(PC)), GET_REG(RegisterL)); }
-void	CPU::BIT_N_ADDR_HL(){ BIT_N_8(GET_TARGET_BIT(0x40, GET_BYTE(PC)), GET_BYTE(GET_COMPOSED_REG(RegisterHL))); }
+void	CPU::BIT_N_A()		{ BIT_N_8(GET_TARGET_BIT(0x40, m_opcode), GET_REG(RegisterA)); }
+void	CPU::BIT_N_B()		{ BIT_N_8(GET_TARGET_BIT(0x40, m_opcode), GET_REG(RegisterB)); }
+void	CPU::BIT_N_C()		{ BIT_N_8(GET_TARGET_BIT(0x40, m_opcode), GET_REG(RegisterC)); }
+void	CPU::BIT_N_D()		{ BIT_N_8(GET_TARGET_BIT(0x40, m_opcode), GET_REG(RegisterD)); }
+void	CPU::BIT_N_E()		{ BIT_N_8(GET_TARGET_BIT(0x40, m_opcode), GET_REG(RegisterE)); }
+void	CPU::BIT_N_H()		{ BIT_N_8(GET_TARGET_BIT(0x40, m_opcode), GET_REG(RegisterH)); }
+void	CPU::BIT_N_L()		{ BIT_N_8(GET_TARGET_BIT(0x40, m_opcode), GET_REG(RegisterL)); }
+void	CPU::BIT_N_ADDR_HL(){ BIT_N_8(GET_TARGET_BIT(0x40, m_opcode), GET_BYTE(GET_COMPOSED_REG(RegisterHL))); }
 
-void	CPU::RES_N_A()		{ SET_REG(RegisterA, RES_N_8(GET_TARGET_BIT(0x80, GET_BYTE(PC)), GET_REG(RegisterA))); }
-void	CPU::RES_N_B()		{ SET_REG(RegisterB, RES_N_8(GET_TARGET_BIT(0x80, GET_BYTE(PC)), GET_REG(RegisterB))); }
-void	CPU::RES_N_C()		{ SET_REG(RegisterC, RES_N_8(GET_TARGET_BIT(0x80, GET_BYTE(PC)), GET_REG(RegisterC))); }
-void	CPU::RES_N_D()		{ SET_REG(RegisterD, RES_N_8(GET_TARGET_BIT(0x80, GET_BYTE(PC)), GET_REG(RegisterD))); }
-void	CPU::RES_N_E()		{ SET_REG(RegisterE, RES_N_8(GET_TARGET_BIT(0x80, GET_BYTE(PC)), GET_REG(RegisterE))); }
-void	CPU::RES_N_H()		{ SET_REG(RegisterH, RES_N_8(GET_TARGET_BIT(0x80, GET_BYTE(PC)), GET_REG(RegisterH))); }
-void	CPU::RES_N_L()		{ SET_REG(RegisterL, RES_N_8(GET_TARGET_BIT(0x80, GET_BYTE(PC)), GET_REG(RegisterL))); }
+void	CPU::RES_N_A()		{ SET_REG(RegisterA, RES_N_8(GET_TARGET_BIT(0x80, m_opcode), GET_REG(RegisterA))); }
+void	CPU::RES_N_B()		{ SET_REG(RegisterB, RES_N_8(GET_TARGET_BIT(0x80, m_opcode), GET_REG(RegisterB))); }
+void	CPU::RES_N_C()		{ SET_REG(RegisterC, RES_N_8(GET_TARGET_BIT(0x80, m_opcode), GET_REG(RegisterC))); }
+void	CPU::RES_N_D()		{ SET_REG(RegisterD, RES_N_8(GET_TARGET_BIT(0x80, m_opcode), GET_REG(RegisterD))); }
+void	CPU::RES_N_E()		{ SET_REG(RegisterE, RES_N_8(GET_TARGET_BIT(0x80, m_opcode), GET_REG(RegisterE))); }
+void	CPU::RES_N_H()		{ SET_REG(RegisterH, RES_N_8(GET_TARGET_BIT(0x80, m_opcode), GET_REG(RegisterH))); }
+void	CPU::RES_N_L()		{ SET_REG(RegisterL, RES_N_8(GET_TARGET_BIT(0x80, m_opcode), GET_REG(RegisterL))); }
 void	CPU::RES_N_ADDR_HL(){ u16 HL = GET_COMPOSED_REG(RegisterHL); WRITE_BYTE(HL, RES_N_8(GET_TARGET_BIT(0x80, m_opcode), GET_BYTE(HL))); }
 
-void	CPU::SET_N_A()		{ SET_REG(RegisterA, SET_N_8(GET_TARGET_BIT(0xC0, GET_BYTE(PC)), GET_REG(RegisterA))); }
-void	CPU::SET_N_B()		{ SET_REG(RegisterB, SET_N_8(GET_TARGET_BIT(0xC0, GET_BYTE(PC)), GET_REG(RegisterB))); }
-void	CPU::SET_N_C()		{ SET_REG(RegisterC, SET_N_8(GET_TARGET_BIT(0xC0, GET_BYTE(PC)), GET_REG(RegisterC))); }
-void	CPU::SET_N_D()		{ SET_REG(RegisterD, SET_N_8(GET_TARGET_BIT(0xC0, GET_BYTE(PC)), GET_REG(RegisterD))); }
-void	CPU::SET_N_E()		{ SET_REG(RegisterE, SET_N_8(GET_TARGET_BIT(0xC0, GET_BYTE(PC)), GET_REG(RegisterE))); }
-void	CPU::SET_N_H()		{ SET_REG(RegisterH, SET_N_8(GET_TARGET_BIT(0xC0, GET_BYTE(PC)), GET_REG(RegisterH))); }
-void	CPU::SET_N_L()		{ SET_REG(RegisterL, SET_N_8(GET_TARGET_BIT(0xC0, GET_BYTE(PC)), GET_REG(RegisterL))); }
+void	CPU::SET_N_A()		{ SET_REG(RegisterA, SET_N_8(GET_TARGET_BIT(0xC0, m_opcode), GET_REG(RegisterA))); }
+void	CPU::SET_N_B()		{ SET_REG(RegisterB, SET_N_8(GET_TARGET_BIT(0xC0, m_opcode), GET_REG(RegisterB))); }
+void	CPU::SET_N_C()		{ SET_REG(RegisterC, SET_N_8(GET_TARGET_BIT(0xC0, m_opcode), GET_REG(RegisterC))); }
+void	CPU::SET_N_D()		{ SET_REG(RegisterD, SET_N_8(GET_TARGET_BIT(0xC0, m_opcode), GET_REG(RegisterD))); }
+void	CPU::SET_N_E()		{ SET_REG(RegisterE, SET_N_8(GET_TARGET_BIT(0xC0, m_opcode), GET_REG(RegisterE))); }
+void	CPU::SET_N_H()		{ SET_REG(RegisterH, SET_N_8(GET_TARGET_BIT(0xC0, m_opcode), GET_REG(RegisterH))); }
+void	CPU::SET_N_L()		{ SET_REG(RegisterL, SET_N_8(GET_TARGET_BIT(0xC0, m_opcode), GET_REG(RegisterL))); }
 void	CPU::SET_N_ADDR_HL(){ u16 HL = GET_COMPOSED_REG(RegisterHL); WRITE_BYTE(HL, SET_N_8(GET_TARGET_BIT(0xC0, m_opcode), GET_BYTE(HL))); }

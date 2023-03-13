@@ -19,7 +19,7 @@ u8 Joypad::read_byte()
     {
         case 0x10: return m_rows[0];
         case 0x20: return m_rows[1];
-        default:   return 0;
+		default: return (1);
     }
 }
 

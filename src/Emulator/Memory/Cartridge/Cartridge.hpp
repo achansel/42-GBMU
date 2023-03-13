@@ -13,8 +13,7 @@
 
 enum class CartridgeType {
 	ROM_ONLY						= 0x00,
-	//MBC1							= 0x01,
-	/*
+	MBC1							= 0x01,
 	MBC1_RAM						= 0x02,
 	MBC1_RAM_BATTERY				= 0x03,
 	MBC2							= 0x05,
@@ -41,7 +40,6 @@ enum class CartridgeType {
 	BANDAI_TAMA5					= 0xFD,
 	HUC3							= 0xFE,
 	HUC1_RAM_BATTERY				= 0xFF,
-	*/
 };
 
 class Cartridge {

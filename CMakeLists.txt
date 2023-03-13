@@ -55,6 +55,13 @@ target_sources(EGBoy PRIVATE
             ${SOURCE_FOLDER}/main.cpp
             ${SOURCE_FOLDER}/Emulator/Emulator.cpp
             ${SOURCE_FOLDER}/Emulator/CPU/CPU.cpp
+			${SOURCE_FOLDER}/Emulator/CPU/Instructions/ALU.cpp
+			${SOURCE_FOLDER}/Emulator/CPU/Instructions/Control.cpp
+			${SOURCE_FOLDER}/Emulator/CPU/Instructions/InstrCommon.cpp
+			${SOURCE_FOLDER}/Emulator/CPU/Instructions/InstrTable.cpp
+			${SOURCE_FOLDER}/Emulator/CPU/Instructions/LD.cpp
+			${SOURCE_FOLDER}/Emulator/CPU/Instructions/Prefixed.cpp
+			${SOURCE_FOLDER}/Emulator/CPU/Instructions/System.cpp
             ${SOURCE_FOLDER}/Emulator/Joypad/Joypad.cpp
             ${SOURCE_FOLDER}/Emulator/LCD/LCD.cpp
             ${SOURCE_FOLDER}/Emulator/Memory/MMU.cpp
