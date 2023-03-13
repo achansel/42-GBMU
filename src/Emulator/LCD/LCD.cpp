@@ -125,27 +125,27 @@ void LCD::write_byte(u16 memory_loc, u8 value) {
                     switch ((value >> (i * 2)) & 3)
                     {
                         case 0:
-                            m_pal[i][0] = 255;
-                            m_pal[i][1] = 255;
-                            m_pal[i][2] = 255;
+                            m_pal[i][0] = 0xff;
+                            m_pal[i][1] = 0xe7;
+                            m_pal[i][2] = 0xcd;
                             m_pal[i][3] = 255;
                             break;
                         case 1:
-                            m_pal[i][0] = 192;
-                            m_pal[i][1] = 192;
-                            m_pal[i][2] = 192;
+                            m_pal[i][0] = 0xe4;
+                            m_pal[i][1] = 0xa3;
+                            m_pal[i][2] = 0x9f;
                             m_pal[i][3] = 255;
                             break;
                         case 2:
-                            m_pal[i][0] = 96;
-                            m_pal[i][1] = 96;
-                            m_pal[i][2] = 96;
+                            m_pal[i][0] = 0x62;
+                            m_pal[i][1] = 0x90;
+                            m_pal[i][2] = 0x98;
                             m_pal[i][3] = 255;
                             break;
                         case 3:
-                            m_pal[i][0] = 0;
-                            m_pal[i][1] = 0;
-                            m_pal[i][2] = 0;
+                            m_pal[i][0] = 0x4c;
+                            m_pal[i][1] = 0x34;
+                            m_pal[i][2] = 0x57;
                             m_pal[i][3] = 255;
                             break;
                     }
