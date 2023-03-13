@@ -9,6 +9,7 @@ void CPU::fill_instructions_table()
 	i.fill(&CPU::UNDEFINED);
 	
 	i[0x00] = &CPU::NOP;
+	i[0x10] = &CPU::STOP;
 	i[0xF3] = &CPU::DI;
 	i[0xFB] = &CPU::EI;
 

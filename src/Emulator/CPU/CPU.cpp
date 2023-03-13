@@ -58,10 +58,6 @@ inline void CPU::fetch_instruction()
 
 inline void CPU::execute_next_instruction()
 {
-
-	if (PC == 0x38 && !m_emu->get_MMU().m_bios_mapped)
-		debug_stop();
-
 	fetch_instruction();
 
     // Extended opcode table
