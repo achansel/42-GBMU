@@ -3,18 +3,18 @@
 /*
 	MICRO-INSTRUCTIONS (if its called this way)
 */
-ALWAYS_INLINE void CPU::MOV_ADDR_8(u16 address, u8 value)	{ m_tclock += 4; PC++; this->WRITE_BYTE(address, value); }
-ALWAYS_INLINE void CPU::MOV_ADDR_16(u16 address, u16 value)	{ m_tclock += 4; PC++; this->WRITE_WORD(address, value); }
-ALWAYS_INLINE void CPU::MOV_REG_8(u8 reg, u8 value)			{ m_tclock += 4; PC++; this->SET_REG(reg, value); }
-ALWAYS_INLINE void CPU::MOV_REG_16(u8 reg, u16 value)		{ m_tclock += 4; PC++; this->SET_COMPOSED_REG(reg, value); }
+ALWAYS_INLINE void CPU::MOV_ADDR_8(u16 address, u8 value)	{ this->WRITE_BYTE(address, value); }
+ALWAYS_INLINE void CPU::MOV_ADDR_16(u16 address, u16 value)	{ this->WRITE_WORD(address, value); }
+ALWAYS_INLINE void CPU::MOV_REG_8(u8 reg, u8 value)			{ this->SET_REG(reg, value); }
+ALWAYS_INLINE void CPU::MOV_REG_16(u8 reg, u16 value)		{ this->SET_COMPOSED_REG(reg, value); }
 
 ALWAYS_INLINE void CPU::MOV_ADDR_REG8(u16 address, u8 reg)  { MOV_ADDR_8(address, this->GET_REG(reg)); }
 ALWAYS_INLINE void CPU::MOV_ADDR_REG16(u16 address, u8 reg)	{ MOV_ADDR_16(address, this->GET_COMPOSED_REG(reg)); }
 ALWAYS_INLINE void CPU::MOV_REG8_REG8(u8 dst, u8 src)		{ MOV_REG_8(dst, this->GET_REG(src)); }
 ALWAYS_INLINE void CPU::MOV_REG16_REG16(u8 dst, u8 src)		{ MOV_REG_16(dst, this->GET_COMPOSED_REG(src));}
 
-ALWAYS_INLINE void CPU::MOV_REG8_IMM8(u8 dst)				{ MOV_REG_8(dst, this->FETCH_BYTE(PC + 1)); }
-ALWAYS_INLINE void CPU::MOV_REG16_IMM16(u8 dst)				{ MOV_REG_16(dst, this->FETCH_WORD(PC + 1)); }
+ALWAYS_INLINE void CPU::MOV_REG8_IMM8(u8 dst)				{ MOV_REG_8(dst, this->FETCH_BYTE()); }
+ALWAYS_INLINE void CPU::MOV_REG16_IMM16(u8 dst)				{ MOV_REG_16(dst, this->FETCH_WORD()); }
 
 ALWAYS_INLINE void CPU::MOV_REG8_ADDR(u8 dst, u16 address)	{ MOV_REG_8(dst, this->GET_BYTE(address)); }
 
@@ -37,9 +37,9 @@ void CPU::LD_ADDR_HLD_A()	{ MOV_ADDR_REG8(GET_COMPOSED_REG(RegisterHL), Register
 void CPU::LD_B_d8()			{ MOV_REG8_IMM8(RegisterB); }
 void CPU::LD_D_d8()			{ MOV_REG8_IMM8(RegisterD); }
 void CPU::LD_H_d8()			{ MOV_REG8_IMM8(RegisterH); }
-void CPU::LD_ADDR_HL_d8()	{ MOV_ADDR_8(GET_COMPOSED_REG(RegisterHL), FETCH_BYTE(PC + 1)); }
+void CPU::LD_ADDR_HL_d8()	{ MOV_ADDR_8(GET_COMPOSED_REG(RegisterHL), FETCH_BYTE()); }
 
-void CPU::LD_ADDR_d16_SP()  { MOV_ADDR_16(FETCH_WORD(PC + 1), GET_COMPOSED_REG(RegisterSP)); }
+void CPU::LD_ADDR_d16_SP()  { MOV_ADDR_16(FETCH_WORD(), GET_COMPOSED_REG(RegisterSP)); }
 
 void CPU::LD_A_ADDR_BC()	{ MOV_REG8_ADDR(RegisterA, GET_COMPOSED_REG(RegisterBC)); }
 void CPU::LD_A_ADDR_DE()	{ MOV_REG8_ADDR(RegisterA, GET_COMPOSED_REG(RegisterDE)); }
@@ -122,8 +122,8 @@ void CPU::LD_E_ADDR_HL()	{ MOV_REG8_ADDR(RegisterE, GET_COMPOSED_REG(RegisterHL)
 void CPU::LD_H_ADDR_HL()	{ MOV_REG8_ADDR(RegisterH, GET_COMPOSED_REG(RegisterHL)); }
 void CPU::LD_L_ADDR_HL()	{ MOV_REG8_ADDR(RegisterL, GET_COMPOSED_REG(RegisterHL)); }
 
-void CPU::LDH_IMM8_A()		{ MOV_ADDR_REG8(0xFF00 + FETCH_BYTE(PC + 1), RegisterA); }
-void CPU::LDH_A_IMM8()		{ MOV_REG8_ADDR(RegisterA, 0xFF00 + FETCH_BYTE(PC + 1)); }
+void CPU::LDH_IMM8_A()		{ MOV_ADDR_REG8(0xFF00 + FETCH_BYTE(), RegisterA); }
+void CPU::LDH_A_IMM8()		{ MOV_REG8_ADDR(RegisterA, 0xFF00 + FETCH_BYTE()); }
 
 void CPU::LD_ADDR_C_A()		{ MOV_ADDR_REG8(0xFF00 + GET_REG(RegisterC), RegisterA); }
 void CPU::LD_A_ADDR_C()		{ MOV_REG8_ADDR(RegisterA, 0xFF00 + GET_REG(RegisterC)); }
@@ -132,7 +132,7 @@ void CPU::LD_HL_SP_X_IMM8()
 {
 	m_tclock += 4;
 
-	u32 n = GET_COMPOSED_REG(RegisterSP) + static_cast<s8>(FETCH_BYTE(PC + 1));
+	u32 n = GET_COMPOSED_REG(RegisterSP) + static_cast<s8>(FETCH_BYTE());
 	SET_FLAG(ZeroFlag, 0);
 	SET_FLAG(SubstractFlag, 0);
     SET_FLAG(HalfCarryFlag, !!(n & 0x100));
@@ -142,8 +142,8 @@ void CPU::LD_HL_SP_X_IMM8()
 }
 void CPU::LD_SP_HL()		{ MOV_REG16_REG16(RegisterSP, RegisterHL); m_tclock += 4; }	
 
-void CPU::LD_ADDR_IMM16_A()	{ MOV_ADDR_REG8(FETCH_WORD(PC + 1), RegisterA); }
-void CPU::LD_A_ADDR_IMM16()	{ MOV_REG8_ADDR(RegisterA, FETCH_WORD(PC + 1)); }
+void CPU::LD_ADDR_IMM16_A()	{ MOV_ADDR_REG8(FETCH_WORD(), RegisterA); }
+void CPU::LD_A_ADDR_IMM16()	{ MOV_REG8_ADDR(RegisterA, FETCH_WORD()); }
 
 void CPU::POP_BC()			{ POP_REG16(RegisterBC); }
 void CPU::POP_DE()			{ POP_REG16(RegisterDE); }

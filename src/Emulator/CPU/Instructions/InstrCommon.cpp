@@ -37,19 +37,19 @@ ALWAYS_INLINE u8 CPU::GET_FLAG(u8 flag)
 }
 
 /* Memory instructions */
-ALWAYS_INLINE u8 CPU::FETCH_BYTE(u16 address)
+ALWAYS_INLINE u8 CPU::FETCH_BYTE()
 {
 	m_tclock += 4;
-	PC += 1;
 
-	return m_emu->get_MMU().get_byte_at(address);
+	return m_emu->get_MMU().get_byte_at(PC++);
 }
-ALWAYS_INLINE u16 CPU::FETCH_WORD(u16 address)
+ALWAYS_INLINE u16 CPU::FETCH_WORD()
 {
 	m_tclock += 8;
-	PC += 2;
 
-	return m_emu->get_MMU().get_word_at(address);
+	u16 w = m_emu->get_MMU().get_word_at(PC);
+	PC += 2;
+	return (w);
 }
 ALWAYS_INLINE u8 CPU::GET_BYTE(u16 address)
 {

@@ -9,7 +9,7 @@
 class Emulator;
 
 
-#define ALWAYS_INLINE 
+#define ALWAYS_INLINE
 
 enum Register {RegisterB = 0, RegisterC = 1, RegisterD = 2, RegisterE = 3, RegisterH = 4, RegisterL = 5, RegisterF = 6, RegisterA = 7};
 enum ComposedRegister {RegisterBC = 0x01, RegisterDE = 0x23, RegisterHL = 0x45, RegisterAF = 0x76, RegisterSP = 0x98};
@@ -40,6 +40,7 @@ public:
 private:
 	typedef void (CPU::*InstructionPtr)(void);
 
+	void fetch_instruction();
     void execute_next_instruction();
     void saveafterinstruction();
 
@@ -78,10 +79,10 @@ private:
 	ALWAYS_INLINE u8	GET_FLAG(u8 flag);
 
 	/* Memory instructions */
-	ALWAYS_INLINE u8	FETCH_BYTE(u16 address);
+	ALWAYS_INLINE u8	FETCH_BYTE();
 	ALWAYS_INLINE u8	GET_BYTE(u16 address);
 
-	ALWAYS_INLINE u16	FETCH_WORD(u16 address);
+	ALWAYS_INLINE u16	FETCH_WORD();
 	ALWAYS_INLINE u16	GET_WORD(u16 address);
 
 	ALWAYS_INLINE void	WRITE_BYTE(u16 address, u8 byte);
@@ -109,8 +110,6 @@ private:
 	template<int SIGN, int CARRY>
 	ALWAYS_INLINE void ADD_A_8(u8 operand)	
 	{
-		m_tclock += 4; PC++;
-
 		u16 res = GET_FLAG(CarryFlag) * CARRY + operand * SIGN + GET_REG(RegisterA);
 		SET_FLAG(ZeroFlag, static_cast<u8>(res) == 0);
 		SET_FLAG(SubstractFlag, SIGN == -1);
@@ -120,7 +119,7 @@ private:
 	}
 	ALWAYS_INLINE void ADD_REG16_REG16(u8 dst, u8 src)
 	{
-		m_tclock += 8; PC++;
+		m_tclock += 4;
 
 		u32 res = GET_COMPOSED_REG(dst) + GET_COMPOSED_REG(src);
 		SET_FLAG(SubstractFlag, 0);
@@ -132,33 +131,29 @@ private:
 	ALWAYS_INLINE void SBC(u8 operand)			{ ADD_A_8<-1, 1>(operand); }
 	ALWAYS_INLINE void ADD(u8 operand)			{ ADD_A_8<1, 0>(operand); }
 	ALWAYS_INLINE void SUB(u8 operand)			{ ADD_A_8<-1, 0>(operand); }
-	ALWAYS_INLINE void DEC_REG16(u8 reg) 		{ m_tclock += 8; PC++; DEC_COMPOSED_REG(reg); }
-	ALWAYS_INLINE void INC_REG16(u8 reg) 		{ m_tclock += 8; PC++; INC_COMPOSED_REG(reg); }
-	ALWAYS_INLINE void DEC_REG8(u8 reg)  		{ m_tclock += 4; PC++; DEC_REG(reg); SET_FLAG(ZeroFlag, GET_REG(reg) == 0); SET_FLAG(SubstractFlag, 1); SET_FLAG(HalfCarryFlag, (GET_REG(reg) >> 4) & 1); }
-	ALWAYS_INLINE void INC_REG8(u8 reg) 		{ m_tclock += 4; PC++; INC_REG(reg); SET_FLAG(ZeroFlag, GET_REG(reg) == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, (GET_REG(reg) >> 4) & 1); }
-	ALWAYS_INLINE void DEC_ADDR(u16 address)	{ m_tclock += 4; PC++; u8 b = GET_BYTE(address) - 1; SET_FLAG(ZeroFlag, b == 0); SET_FLAG(SubstractFlag, 1); SET_FLAG(HalfCarryFlag, (b >> 4) & 1); WRITE_BYTE(address, b); }
-	ALWAYS_INLINE void INC_ADDR(u16 address)	{ m_tclock += 4; PC++; u8 b = GET_BYTE(address) + 1; SET_FLAG(ZeroFlag, b == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, (b >> 4) & 1); WRITE_BYTE(address, b); }
+	ALWAYS_INLINE void DEC_REG16(u8 reg) 		{ m_tclock += 4; DEC_COMPOSED_REG(reg); }
+	ALWAYS_INLINE void INC_REG16(u8 reg) 		{ m_tclock += 4; INC_COMPOSED_REG(reg); }
+	ALWAYS_INLINE void DEC_REG8(u8 reg)  		{ DEC_REG(reg); SET_FLAG(ZeroFlag, GET_REG(reg) == 0); SET_FLAG(SubstractFlag, 1); SET_FLAG(HalfCarryFlag, (GET_REG(reg) >> 4) & 1); }
+	ALWAYS_INLINE void INC_REG8(u8 reg) 		{ INC_REG(reg); SET_FLAG(ZeroFlag, GET_REG(reg) == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, (GET_REG(reg) >> 4) & 1); }
+	ALWAYS_INLINE void DEC_ADDR(u16 address)	{ u8 b = GET_BYTE(address) - 1; SET_FLAG(ZeroFlag, b == 0); SET_FLAG(SubstractFlag, 1); SET_FLAG(HalfCarryFlag, (b >> 4) & 1); WRITE_BYTE(address, b); }
+	ALWAYS_INLINE void INC_ADDR(u16 address)	{ u8 b = GET_BYTE(address) + 1; SET_FLAG(ZeroFlag, b == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, (b >> 4) & 1); WRITE_BYTE(address, b); }
 
-	ALWAYS_INLINE void AND(u8 operand)			{ m_tclock += 4; PC++; u8 a = GET_REG(RegisterA) & operand; SET_REG(RegisterA, a); SET_FLAG(ZeroFlag, a == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, 1); SET_FLAG(CarryFlag, 0); }
-	ALWAYS_INLINE void XOR(u8 operand)			{ m_tclock += 4; PC++; u8 a = GET_REG(RegisterA) ^ operand; SET_REG(RegisterA, a); SET_FLAG(ZeroFlag, a == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, 0); SET_FLAG(CarryFlag, 0); }
-	ALWAYS_INLINE void OR(u8 operand)			{ m_tclock += 4; PC++; u8 a = GET_REG(RegisterA) | operand; SET_REG(RegisterA, a); SET_FLAG(ZeroFlag, a == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, 0); SET_FLAG(CarryFlag, 0); }
+	ALWAYS_INLINE void AND(u8 operand)			{ u8 a = GET_REG(RegisterA) & operand; SET_REG(RegisterA, a); SET_FLAG(ZeroFlag, a == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, 1); SET_FLAG(CarryFlag, 0); }
+	ALWAYS_INLINE void XOR(u8 operand)			{ u8 a = GET_REG(RegisterA) ^ operand; SET_REG(RegisterA, a); SET_FLAG(ZeroFlag, a == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, 0); SET_FLAG(CarryFlag, 0); }
+	ALWAYS_INLINE void OR(u8 operand)			{ u8 a = GET_REG(RegisterA) | operand; SET_REG(RegisterA, a); SET_FLAG(ZeroFlag, a == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, 0); SET_FLAG(CarryFlag, 0); }
 	ALWAYS_INLINE void CP(u8 operand)
 	{
-		m_tclock += 4; PC++;
-
 		u8 a = GET_REG(RegisterA);
 		SET_FLAG(ZeroFlag, a == operand);
 		SET_FLAG(SubstractFlag, 1);
 		SET_FLAG(HalfCarryFlag, ((a - operand) & 0xF) > (a & 0xF));
 		SET_FLAG(CarryFlag, a < operand);
 	}
-	ALWAYS_INLINE void _JUMP(u16 address)	{ m_tclock += 4; if (PC - 2 == address) debug_stop(); PC = address;}
-	ALWAYS_INLINE void _RET()				{ m_tclock += 4; u16 sp = GET_COMPOSED_REG(RegisterSP); PC = GET_WORD(sp); SET_COMPOSED_REG(RegisterSP, sp + 2); }
+	ALWAYS_INLINE void _JUMP(u16 address)	{ PC = address;}
+	ALWAYS_INLINE void _RET()				{ u16 sp = GET_COMPOSED_REG(RegisterSP); PC = GET_WORD(sp); SET_COMPOSED_REG(RegisterSP, sp + 2); }
 	ALWAYS_INLINE void _CALL(u16 address)	{ u16 sp = GET_COMPOSED_REG(RegisterSP) - 2; WRITE_WORD(sp, PC); SET_COMPOSED_REG(RegisterSP, sp); _JUMP(address); }
 	u8 RLC(u8 operand)
 	{
-		m_tclock += 4; PC++;
-
 		u8 a = operand;
 		a = (a << 1) | (a >> 7);
 
@@ -172,8 +167,6 @@ private:
 
 	u8 RRC(u8 operand)
 	{
-		m_tclock += 4; PC++;
-
 		u8 a = operand;
 		a = (a >> 1) | (a << 7);
 
@@ -187,8 +180,6 @@ private:
 
 	u8 RL(u8 operand)
 	{
-		m_tclock += 4; PC++;
-
 		u8 a = operand;
 		a = (a << 1) | (GET_FLAG(CarryFlag) << 0);
 
@@ -202,8 +193,6 @@ private:
 
 	u8 RR(u8 operand)
 	{
-		m_tclock += 4; PC++;
-
 		u8 a = operand;
 		a = (a >> 1) | (GET_FLAG(CarryFlag) << 7);
 
@@ -217,8 +206,6 @@ private:
 
 	u8 SRA(u8 operand)
 	{
-		m_tclock += 4; PC++;
-
 		u8 a = operand;
 		a = (a >> 1) | (a & 0x80);
 
@@ -232,8 +219,6 @@ private:
 
 	u8 SLA(u8 operand)
 	{
-		m_tclock += 4; PC++;
-
 		u8 a = operand;
 		a = ((a << 1) & ~0x80) | (a & 0x80);
 
@@ -247,8 +232,6 @@ private:
 
 	u8 SWAP(u8 operand)
 	{
-		m_tclock += 4; PC++;
-
 		u8 a = operand;
 		a = (a >> 4) | ((a & 0xf) << 4);
 
@@ -263,8 +246,6 @@ private:
 
 	u8 SRL(u8 operand)
 	{
-		m_tclock += 4; PC++;
-
 		u8 a = operand;
 		a <<= 1;
 
@@ -275,9 +256,9 @@ private:
 
 		return a;
 	}
-	void	BIT_N_8(u8 bit, u8 val) { m_tclock += 4; PC++; SET_FLAG(ZeroFlag, !((val >> bit) & 1)); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, 1); }
-	u8		RES_N_8(u8 bit, u8 val) { m_tclock += 4; PC++; return (val & ~(1 << bit)); }
-	u8		SET_N_8(u8 bit, u8 val) { m_tclock += 4; PC++; return (val | (1 << bit)); }
+	void	BIT_N_8(u8 bit, u8 val) { SET_FLAG(ZeroFlag, !((val >> bit) & 1)); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, 1); }
+	u8		RES_N_8(u8 bit, u8 val) { return (val & ~(1 << bit)); }
+	u8		SET_N_8(u8 bit, u8 val) { return (val | (1 << bit)); }
 
 
 	/* INSTRUCTIONS FUNCTIONS MESS */

@@ -49,16 +49,20 @@ inline void CPU::step_lcd()
     m_emu->get_lcd().update(m_tclock);
 }
 
+inline void CPU::fetch_instruction()
+{
+    m_opcode = m_emu->get_MMU().get_byte_at(PC);
+	PC++; m_tclock += 4;
+}
+
 inline void CPU::execute_next_instruction()
 {
-    // Fetch the instruction
-    m_opcode = m_emu->get_MMU().get_byte_at(PC);
+	fetch_instruction();
 
     // Extended opcode table
     if (m_opcode == 0xCB)
     {
-        m_opcode = m_emu->get_MMU().get_byte_at(++PC);
-		m_tclock += 4;
+        fetch_instruction();
 		auto operation = m_instructions_cb[m_opcode];
 		(this->*operation)();
     }

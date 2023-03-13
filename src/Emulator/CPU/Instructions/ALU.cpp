@@ -42,7 +42,7 @@ void CPU::ADD_A_E()								{ ADD(GET_REG(RegisterE)); }
 void CPU::ADD_A_H()								{ ADD(GET_REG(RegisterH)); }
 void CPU::ADD_A_L()								{ ADD(GET_REG(RegisterL)); }
 void CPU::ADD_A_ADDR_HL()						{ ADD(GET_BYTE(GET_COMPOSED_REG(RegisterHL))); }
-void CPU::ADD_A_IMM8()							{ ADD(FETCH_BYTE(PC + 1)); }
+void CPU::ADD_A_IMM8()							{ ADD(FETCH_BYTE()); }
 
 void CPU::ADC_A_A()								{ ADC(GET_REG(RegisterA)); }
 void CPU::ADC_A_B()								{ ADC(GET_REG(RegisterB)); }
@@ -52,7 +52,7 @@ void CPU::ADC_A_E()								{ ADC(GET_REG(RegisterE)); }
 void CPU::ADC_A_H()								{ ADC(GET_REG(RegisterH)); }
 void CPU::ADC_A_L()								{ ADC(GET_REG(RegisterL)); }
 void CPU::ADC_A_ADDR_HL()						{ ADC(GET_BYTE(GET_COMPOSED_REG(RegisterHL))); }
-void CPU::ADC_A_IMM8()							{ ADC(FETCH_BYTE(PC + 1)); }
+void CPU::ADC_A_IMM8()							{ ADC(FETCH_BYTE()); }
 
 void CPU::SUB_A_A()								{ SUB(GET_REG(RegisterA)); }
 void CPU::SUB_A_B()								{ SUB(GET_REG(RegisterB)); }
@@ -62,7 +62,7 @@ void CPU::SUB_A_E()								{ SUB(GET_REG(RegisterE)); }
 void CPU::SUB_A_H()								{ SUB(GET_REG(RegisterH)); }
 void CPU::SUB_A_L()								{ SUB(GET_REG(RegisterL)); }
 void CPU::SUB_A_ADDR_HL()						{ SUB(GET_BYTE(GET_COMPOSED_REG(RegisterHL))); }
-void CPU::SUB_A_IMM8()							{ SUB(FETCH_BYTE(PC + 1)); }
+void CPU::SUB_A_IMM8()							{ SUB(FETCH_BYTE()); }
 
 void CPU::SBC_A_A()								{ SBC(GET_REG(RegisterA)); }
 void CPU::SBC_A_B()								{ SBC(GET_REG(RegisterB)); }
@@ -72,7 +72,7 @@ void CPU::SBC_A_E()								{ SBC(GET_REG(RegisterE)); }
 void CPU::SBC_A_H()								{ SBC(GET_REG(RegisterH)); }
 void CPU::SBC_A_L()								{ SBC(GET_REG(RegisterL)); }
 void CPU::SBC_A_ADDR_HL()						{ SBC(GET_BYTE(GET_COMPOSED_REG(RegisterHL))); }
-void CPU::SBC_A_IMM8()							{ SBC(FETCH_BYTE(PC + 1)); }
+void CPU::SBC_A_IMM8()							{ SBC(FETCH_BYTE()); }
 
 void CPU::ADD_HL_BC()							{ ADD_REG16_REG16(RegisterHL, RegisterBC); }
 void CPU::ADD_HL_DE()							{ ADD_REG16_REG16(RegisterHL, RegisterDE); }
@@ -81,16 +81,14 @@ void CPU::ADD_HL_SP()							{ ADD_REG16_REG16(RegisterHL, RegisterSP); }
 
 void CPU::ADD_SP_IMM8()
 {
-	m_tclock += 12;
+	m_tclock += 8;
 	
-	u32 n = GET_COMPOSED_REG(RegisterSP) + static_cast<s8>(FETCH_BYTE(PC + 1));
+	u32 n = GET_COMPOSED_REG(RegisterSP) + static_cast<s8>(FETCH_BYTE());
 	SET_REG(RegisterSP, static_cast<u16>(n));
 	SET_FLAG(ZeroFlag, 0);
 	SET_FLAG(SubstractFlag, 0);
     SET_FLAG(HalfCarryFlag, !!(n & 0x100));
     SET_FLAG(CarryFlag,		!!(n & 0x10000));
-
-	PC += 1;
 }
 
 void CPU::AND_A_A()								{ AND(GET_REG(RegisterA)); }
@@ -101,7 +99,7 @@ void CPU::AND_A_E()								{ AND(GET_REG(RegisterE)); }
 void CPU::AND_A_H()								{ AND(GET_REG(RegisterH)); }
 void CPU::AND_A_L()								{ AND(GET_REG(RegisterL)); }
 void CPU::AND_A_ADDR_HL()						{ AND(GET_BYTE(GET_COMPOSED_REG(RegisterHL))); }
-void CPU::AND_A_IMM8()							{ AND(FETCH_BYTE(PC + 1)); }
+void CPU::AND_A_IMM8()							{ AND(FETCH_BYTE()); }
 
 void CPU::OR_A_A()								{ OR(GET_REG(RegisterA)); }
 void CPU::OR_A_B()								{ OR(GET_REG(RegisterB)); }
@@ -111,7 +109,7 @@ void CPU::OR_A_E()								{ OR(GET_REG(RegisterE)); }
 void CPU::OR_A_H()								{ OR(GET_REG(RegisterH)); }
 void CPU::OR_A_L()								{ OR(GET_REG(RegisterL)); }
 void CPU::OR_A_ADDR_HL()						{ OR(GET_BYTE(GET_COMPOSED_REG(RegisterHL))); }
-void CPU::OR_A_IMM8()							{ OR(FETCH_BYTE(PC + 1)); }
+void CPU::OR_A_IMM8()							{ OR(FETCH_BYTE()); }
 
 void CPU::XOR_A_A()								{ XOR(GET_REG(RegisterA)); }
 void CPU::XOR_A_B()								{ XOR(GET_REG(RegisterB)); }
@@ -121,7 +119,7 @@ void CPU::XOR_A_E()								{ XOR(GET_REG(RegisterE)); }
 void CPU::XOR_A_H()								{ XOR(GET_REG(RegisterH)); }
 void CPU::XOR_A_L()								{ XOR(GET_REG(RegisterL)); }
 void CPU::XOR_A_ADDR_HL()						{ XOR(GET_BYTE(GET_COMPOSED_REG(RegisterHL))); }
-void CPU::XOR_A_IMM8()							{ XOR(FETCH_BYTE(PC + 1)); }
+void CPU::XOR_A_IMM8()							{ XOR(FETCH_BYTE()); }
 
 void CPU::CP_A_A()								{ CP(GET_REG(RegisterA)); }
 void CPU::CP_A_B()								{ CP(GET_REG(RegisterB)); }
@@ -131,13 +129,11 @@ void CPU::CP_A_E()								{ CP(GET_REG(RegisterE)); }
 void CPU::CP_A_H()								{ CP(GET_REG(RegisterH)); }
 void CPU::CP_A_L()								{ CP(GET_REG(RegisterL)); }
 void CPU::CP_A_ADDR_HL()						{ CP(GET_BYTE(GET_COMPOSED_REG(RegisterHL))); }
-void CPU::CP_A_IMM8()							{ CP(FETCH_BYTE(PC + 1)); }
+void CPU::CP_A_IMM8()							{ CP(FETCH_BYTE()); }
 
 // DAA: Decimal Adjust A, the way the GB handles BCD (Binary-Coded Decimal) arithmetic
 void CPU::DAA()
 {
-	m_tclock += 4; PC++;
-
 	u8 a = GET_REG(RegisterA);
 	if (GET_FLAG(SubstractFlag))
 	{
@@ -164,8 +160,6 @@ void CPU::DAA()
 
 void CPU::CPL()
 {
-	m_tclock += 4; PC++;
-
 	SET_REG(RegisterA, ~GET_REG(RegisterA));
 	SET_FLAG(SubstractFlag, 1);
 	SET_FLAG(HalfCarryFlag, 1);
@@ -173,8 +167,6 @@ void CPU::CPL()
 
 void CPU::CCF()
 {
-	m_tclock += 4; PC++;
-
 	SET_FLAG(SubstractFlag, 0);
 	SET_FLAG(HalfCarryFlag, 0);
 	SET_FLAG(CarryFlag, !GET_FLAG(CarryFlag));
@@ -182,8 +174,6 @@ void CPU::CCF()
 
 void CPU::SCF()
 {
-	m_tclock += 4; PC++;
-
 	SET_FLAG(SubstractFlag, 0);
 	SET_FLAG(HalfCarryFlag, 0);
 	SET_FLAG(CarryFlag, 1);

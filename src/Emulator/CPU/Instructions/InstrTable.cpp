@@ -11,6 +11,7 @@ void CPU::fill_instruction_tables()
 
 	i[0x00] = &CPU::NOP;
 	i[0x01] = &CPU::LD_BC_d16;
+	i[0x03] = &CPU::INC_BC;
 	i[0x04] = &CPU::INC_B;
 	i[0x05] = &CPU::DEC_B;
 	i[0x06] = &CPU::LD_B_d8;
@@ -21,6 +22,7 @@ void CPU::fill_instruction_tables()
 	i[0x11] = &CPU::LD_DE_d16;
 	i[0x12] = &CPU::LD_ADDR_DE_A;
 	i[0x13] = &CPU::INC_DE;
+	i[0x14] = &CPU::INC_D;
 	i[0x15] = &CPU::DEC_D;
 	i[0x16] = &CPU::LD_D_d8;
 	i[0x17] = &CPU::RL_A;
@@ -38,6 +40,7 @@ void CPU::fill_instruction_tables()
 	i[0x28] = &CPU::JR_Z_IMM8;
 	i[0x2A] = &CPU::LD_A_ADDR_HLI;
 	i[0x2C] = &CPU::INC_L;
+	i[0x2D] = &CPU::DEC_L;
 	i[0x2E] = &CPU::LD_L_d8;
 	i[0x2F] = &CPU::CPL;
 	i[0x31] = &CPU::LD_SP_d16;
@@ -46,8 +49,10 @@ void CPU::fill_instruction_tables()
 	i[0x36] = &CPU::LD_ADDR_HL_d8;
 	i[0x3D] = &CPU::DEC_A;
 	i[0x3E] = &CPU::LD_A_d8;
+	i[0x46] = &CPU::LD_B_ADDR_HL;
 	i[0x47] = &CPU::LD_B_A;
 	i[0x4F] = &CPU::LD_C_A;
+	i[0x4E] = &CPU::LD_C_ADDR_HL;
 	i[0x56] = &CPU::LD_D_ADDR_HL;
 	i[0x57] = &CPU::LD_D_A;
 	i[0x5E] = &CPU::LD_E_ADDR_HL;
@@ -66,19 +71,24 @@ void CPU::fill_instruction_tables()
 	i[0xA1] = &CPU::AND_A_C;
 	i[0xA7] = &CPU::AND_A_A;
 	i[0xA9] = &CPU::XOR_A_C;
+	i[0xAE] = &CPU::XOR_A_ADDR_HL;
 	i[0xAF] = &CPU::XOR_A_A;
 	i[0xB0] = &CPU::OR_A_B;
 	i[0xB1] = &CPU::OR_A_C;
+	i[0xB7] = &CPU::OR_A_A;
 	i[0xBE] = &CPU::CP_A_ADDR_HL;
 	i[0xC1] = &CPU::POP_BC;
 	i[0xC3] = &CPU::JUMP_IMM16;
+	i[0xC4] = &CPU::CALL_NZ_IMM16;
 	i[0xC5] = &CPU::PUSH_BC;
+	i[0xC6] = &CPU::ADD_A_IMM8;
 	i[0xC8] = &CPU::RET_Z;
 	i[0xC9] = &CPU::RET;
 	i[0xCA] = &CPU::JUMP_Z_IMM16;
 	i[0xCD] = &CPU::CALL_IMM16;
 	i[0xD1] = &CPU::POP_DE;
 	i[0xD5] = &CPU::PUSH_DE;
+	i[0xD6] = &CPU::SUB_A_IMM8;
 	i[0xE0] = &CPU::LDH_IMM8_A;
 	i[0xE1] = &CPU::POP_HL;
 	i[0xE2] = &CPU::LD_ADDR_C_A;
