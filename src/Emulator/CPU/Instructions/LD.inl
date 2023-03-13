@@ -56,4 +56,10 @@ void LD_HL_SP_X_IMM8()
 
 	MOV_REG_16(RegisterHL, static_cast<u16>(n));
 }
-void LD_SP_HL()		{ MOV_REG16_REG16(RegisterSP, RegisterHL); m_tclock += 4; }	
+void LD_SP_HL()			{ MOV_REG16_REG16(RegisterSP, RegisterHL); m_tclock += 4; }	
+
+void LDH_IMM8_A()		{ MOV_ADDR_8(0xFF00 + FETCH_BYTE(), GET_REG(RegisterA)); }
+void LDH_A_IMM8()		{ MOV_REG8_ADDR(RegisterA, 0xFF00 + FETCH_BYTE()); }
+
+void LD_ADDR_IMM16_A()	{ MOV_ADDR_8(FETCH_WORD(), GET_REG(RegisterA)); }
+void LD_A_ADDR_IMM16()	{ MOV_REG8_ADDR(RegisterA, FETCH_WORD()); }

@@ -6,7 +6,8 @@ CPU::CPU(Emulator* emu)
     m_emu = emu;
     m_regs[7] = 1;
 
-	fill_instruction_tables();
+	fill_instructions_table();
+	fill_instructions_table_cb();
 }
 
 void CPU::saveafterinstruction()
@@ -57,6 +58,10 @@ inline void CPU::fetch_instruction()
 
 inline void CPU::execute_next_instruction()
 {
+
+	if (PC == 0x38 && !m_emu->get_MMU().m_bios_mapped)
+		debug_stop();
+
 	fetch_instruction();
 
     // Extended opcode table

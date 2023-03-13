@@ -8,8 +8,9 @@ MMU::MMU(Emulator* emu)
 
 u8 MMU::get_byte_at(u16 memory_location)
 {
+	//std::cout << "GBMU: MMU: Memory read at " << std::hex << memory_location << std::endl;
     //if (memory_location >= 0x100 && memory_location < 0xff00)
-    //    std::cout << "Requested byte read at: " << std::hex << memory_location << std::endl;
+    //std::cout << "Requested byte read at: " << std::hex << memory_location << std::endl;
     if (memory_location < 0x100 && m_bios_mapped)
         return dmg_bios[memory_location];
     switch (memory_location & 0xF000)

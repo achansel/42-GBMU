@@ -1,12 +1,21 @@
 #include <Emulator/CPU/CPU.hpp>
 
-void CPU::fill_instruction_tables()
+#include <algorithm>
+
+void CPU::fill_instructions_table()
 {
 	#define i	m_instructions
-	#define ie	m_instructions_cb
 
 	i.fill(&CPU::UNDEFINED);
-	ie.fill(&CPU::UNDEFINED_CB);
+	
+	i[0x00] = &CPU::NOP;
+	i[0xF3] = &CPU::DI;
+	i[0xFB] = &CPU::EI;
+
+	i[0x07] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RLC, RegisterA>;
+	i[0x17] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RL, RegisterA>;
+	i[0x0F] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RRC, RegisterA>;
+	i[0x1F] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RR, RegisterA>;
 
 	i[0xC7] = &CPU::RST<0x00>;
 	i[0xCF] = &CPU::RST<0x08>;
@@ -64,8 +73,8 @@ void CPU::fill_instruction_tables()
 
 	i[0x0A] = &CPU::MOV_REG_ADDR_REG<RegisterA, RegisterBC>;
 	i[0x1A] = &CPU::MOV_REG_ADDR_REG<RegisterA, RegisterDE>;
-	i[0x1A] = &CPU::LD_A_ADDR_HLI;
-	i[0x1A] = &CPU::LD_A_ADDR_HLD;
+	i[0x2A] = &CPU::LD_A_ADDR_HLI;
+	i[0x3A] = &CPU::LD_A_ADDR_HLD;
 
 	i[0x0E] = &CPU::MOV_REG_IMM<RegisterC>;
 	i[0x1E] = &CPU::MOV_REG_IMM<RegisterE>;
@@ -143,8 +152,8 @@ void CPU::fill_instruction_tables()
 	i[0x7E] = &CPU::MOV_REG_ADDR_REG<RegisterA, RegisterHL>;
 	i[0x7F] = &CPU::MOV_REG_REG<RegisterA, RegisterA>;
 
-	//i[0xE0] = &CPU::MOV_IMM8_ADDR_REG<RegisterA>;
-	//i[0xF0] = &CPU::MOV_REG_IMM8_ADDR<RegisterA>;
+	i[0xE0] = &CPU::LDH_IMM8_A;
+	i[0xF0] = &CPU::LDH_A_IMM8;
 
 	i[0xE2] = &CPU::MOV_ADDR_REG_REG<RegisterC, RegisterA>;
 	i[0xF2] = &CPU::MOV_REG_ADDR_REG<RegisterA, RegisterC>;
@@ -152,8 +161,8 @@ void CPU::fill_instruction_tables()
 	i[0xF8] = &CPU::LD_HL_SP_X_IMM8;
 	i[0xF9] = &CPU::LD_SP_HL;
 
-	//i[0xEA] = &CPU::MOV_IMM16_ADDR_REG<RegisterA>;
-	//i[0xFA] = &CPU::MOV_REG_IMM16_ADDR<RegisterA>;
+	i[0xEA] = &CPU::LD_ADDR_IMM16_A;
+	i[0xFA] = &CPU::LD_A_ADDR_IMM16;
 
 	i[0xC1] = &CPU::POP<RegisterBC>;
 	i[0xD1] = &CPU::POP<RegisterDE>;
@@ -285,5 +294,93 @@ void CPU::fill_instruction_tables()
 	i[0xBF] = &CPU::ALU_OP_REG<ALUOP::CP, RegisterA>;
 	i[0xFE] = &CPU::ALU_OP_IMM8<ALUOP::CP>;
 
-	i[0xE9] = &CPU::ADD_SP_IMM8;
+	i[0xE8] = &CPU::ADD_SP_IMM8;
+
+	#undef i
+}
+
+void CPU::fill_instructions_table_cb()
+{
+	#define ie	m_instructions_cb
+
+	ie.fill(&CPU::UNDEFINED_CB);
+
+	ie[0x00] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RLC, RegisterB>;
+	ie[0x01] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RLC, RegisterC>;
+	ie[0x02] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RLC, RegisterD>;
+	ie[0x03] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RLC, RegisterE>;
+	ie[0x04] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RLC, RegisterH>;
+	ie[0x05] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RLC, RegisterL>;
+	ie[0x06] = &CPU::PREFIXED_OP_ADDR_HL<PREFIXEDOP::RLC>;
+	ie[0x07] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RLC, RegisterA>;
+
+	ie[0x08] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RRC, RegisterB>;
+	ie[0x09] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RRC, RegisterC>;
+	ie[0x0A] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RRC, RegisterD>;
+	ie[0x0B] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RRC, RegisterE>;
+	ie[0x0C] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RRC, RegisterH>;
+	ie[0x0D] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RRC, RegisterL>;
+	ie[0x0E] = &CPU::PREFIXED_OP_ADDR_HL<PREFIXEDOP::RRC>;
+	ie[0x0F] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RRC, RegisterA>;
+
+	ie[0x10] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RL, RegisterB>;
+	ie[0x11] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RL, RegisterC>;
+	ie[0x12] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RL, RegisterD>;
+	ie[0x13] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RL, RegisterE>;
+	ie[0x14] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RL, RegisterH>;
+	ie[0x15] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RL, RegisterL>;
+	ie[0x16] = &CPU::PREFIXED_OP_ADDR_HL<PREFIXEDOP::RL>;
+	ie[0x17] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RL, RegisterA>;
+
+	ie[0x18] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RR, RegisterB>;
+	ie[0x19] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RR, RegisterC>;
+	ie[0x1A] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RR, RegisterD>;
+	ie[0x1B] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RR, RegisterE>;
+	ie[0x1C] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RR, RegisterH>;
+	ie[0x1D] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RR, RegisterL>;
+	ie[0x1E] = &CPU::PREFIXED_OP_ADDR_HL<PREFIXEDOP::RR>;
+	ie[0x1F] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RR, RegisterA>;
+
+	ie[0x20] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SLA, RegisterB>;
+	ie[0x21] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SLA, RegisterC>;
+	ie[0x22] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SLA, RegisterD>;
+	ie[0x23] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SLA, RegisterE>;
+	ie[0x24] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SLA, RegisterH>;
+	ie[0x25] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SLA, RegisterL>;
+	ie[0x26] = &CPU::PREFIXED_OP_ADDR_HL<PREFIXEDOP::SLA>;
+	ie[0x27] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SLA, RegisterA>;
+
+	ie[0x28] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRA, RegisterB>;
+	ie[0x29] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRA, RegisterC>;
+	ie[0x2A] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRA, RegisterD>;
+	ie[0x2B] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRA, RegisterE>;
+	ie[0x2C] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRA, RegisterH>;
+	ie[0x2D] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRA, RegisterL>;
+	ie[0x2E] = &CPU::PREFIXED_OP_ADDR_HL<PREFIXEDOP::SRA>;
+	ie[0x2F] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRA, RegisterA>;
+
+	ie[0x30] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SWAP, RegisterB>;
+	ie[0x31] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SWAP, RegisterC>;
+	ie[0x32] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SWAP, RegisterD>;
+	ie[0x33] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SWAP, RegisterE>;
+	ie[0x34] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SWAP, RegisterH>;
+	ie[0x35] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SWAP, RegisterL>;
+	ie[0x36] = &CPU::PREFIXED_OP_ADDR_HL<PREFIXEDOP::SWAP>;
+	ie[0x37] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SWAP, RegisterA>;
+
+	ie[0x38] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRL, RegisterB>;
+	ie[0x39] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRL, RegisterC>;
+	ie[0x3A] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRL, RegisterD>;
+	ie[0x3B] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRL, RegisterE>;
+	ie[0x3C] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRL, RegisterH>;
+	ie[0x3D] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRL, RegisterL>;
+	ie[0x3E] = &CPU::PREFIXED_OP_ADDR_HL<PREFIXEDOP::SRL>;
+	ie[0x3F] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRL, RegisterA>;
+
+	/* See comment in Prefixed.inl, above their implementation */
+	std::fill(ie.begin() + 0x40, ie.begin() + 0x80, &CPU::PREFIXED_OP_DEDUCE<PREFIXEDOP::BIT>);
+	std::fill(ie.begin() + 0x80, ie.begin() + 0xC0, &CPU::PREFIXED_OP_DEDUCE<PREFIXEDOP::RES>);
+	std::fill(ie.begin() + 0xC0, ie.end(), 			&CPU::PREFIXED_OP_DEDUCE<PREFIXEDOP::SET>);
+
+	#undef ie
 }

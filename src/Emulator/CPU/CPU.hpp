@@ -18,6 +18,7 @@ enum Flag {ZeroFlag = 7, SubstractFlag = 6, HalfCarryFlag = 5, CarryFlag = 4};
 class CPU {
 public:
     explicit CPU(Emulator *emu);
+	~CPU() {std::cout << "~CPU() was called\nPC: " << std::hex << PC << std::endl; }
 
     void tick();
     void step_lcd();
@@ -44,7 +45,8 @@ private:
     void execute_next_instruction();
     void saveafterinstruction();
 
-	void fill_instruction_tables();
+	void fill_instructions_table();
+	void fill_instructions_table_cb();
 
 	std::array<InstructionPtr, 256> m_instructions_cb;
 	std::array<InstructionPtr, 256> m_instructions;
@@ -94,115 +96,8 @@ private:
 	#include "Instructions/Control.inl"
 	#include "Instructions/LD.inl"
 	#include "Instructions/ALU.inl"
-
-
-	u8 RLC(u8 operand)
-	{
-		u8 a = operand;
-		a = (a << 1) | (a >> 7);
-
-		SET_FLAG(ZeroFlag, a == 0);
-		SET_FLAG(SubstractFlag, 0);
-		SET_FLAG(HalfCarryFlag, 0);
-		SET_FLAG(CarryFlag, (a >> 0) & 1);
-
-		return (a);
-	}
-
-	u8 RRC(u8 operand)
-	{
-		u8 a = operand;
-		a = (a >> 1) | (a << 7);
-
-		SET_FLAG(ZeroFlag, a == 0);
-		SET_FLAG(SubstractFlag, 0);
-		SET_FLAG(HalfCarryFlag, 0);
-		SET_FLAG(CarryFlag, (a >> 7) & 1); //maybe wrong swap & 1 and & 0x80
-
-		return (a);
-	}
-
-	u8 RL(u8 operand)
-	{
-		u8 a = operand;
-		a = (a << 1) | (GET_FLAG(CarryFlag) << 0);
-
-		SET_FLAG(ZeroFlag, a == 0);
-		SET_FLAG(SubstractFlag, 0);
-		SET_FLAG(HalfCarryFlag, 0);
-		SET_FLAG(CarryFlag, (operand >> 7) & 1); //maybe wrong swap & 1 and & 0x80
-
-		return (a);
-	}
-
-	u8 RR(u8 operand)
-	{
-		u8 a = operand;
-		a = (a >> 1) | (GET_FLAG(CarryFlag) << 7);
-
-		SET_FLAG(ZeroFlag, a == 0);
-		SET_FLAG(SubstractFlag, 0);
-		SET_FLAG(HalfCarryFlag, 0);
-		SET_FLAG(CarryFlag, operand & 1); //maybe wrong swap & 1 and & 0x80
-
-		return (a);
-	}
-
-	u8 SRA(u8 operand)
-	{
-		u8 a = operand;
-		a = (a >> 1) | (a & 0x80);
-
-		SET_FLAG(ZeroFlag, a == 0);
-		SET_FLAG(SubstractFlag, 0);
-		SET_FLAG(HalfCarryFlag, 0);
-		SET_FLAG(CarryFlag, operand & 0x01);
-
-		return a;
-	}
-
-	u8 SLA(u8 operand)
-	{
-		u8 a = operand;
-		a = ((a << 1) & ~0x80) | (a & 0x80);
-
-		SET_FLAG(ZeroFlag, a == 0);
-		SET_FLAG(SubstractFlag, 0);
-		SET_FLAG(HalfCarryFlag, 0);
-		SET_FLAG(CarryFlag, (operand >> 7) & 0x01);
-
-		return a;
-	}
-
-	u8 SWAP(u8 operand)
-	{
-		u8 a = operand;
-		a = (a >> 4) | ((a & 0xf) << 4);
-
-		SET_FLAG(ZeroFlag, a == 0);
-		SET_FLAG(SubstractFlag, 0);
-		SET_FLAG(HalfCarryFlag, 0);
-		SET_FLAG(CarryFlag, 0);
-
-		return a;
-	}
-
-
-	u8 SRL(u8 operand)
-	{
-		u8 a = operand;
-		a <<= 1;
-
-		SET_FLAG(ZeroFlag, a == 0);
-		SET_FLAG(SubstractFlag, 0);
-		SET_FLAG(HalfCarryFlag, 0);
-		SET_FLAG(CarryFlag, (operand >> 7) & 0x01);
-
-		return a;
-	}
-	void	BIT_N_8(u8 bit, u8 val) { SET_FLAG(ZeroFlag, !((val >> bit) & 1)); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, 1); }
-	u8		RES_N_8(u8 bit, u8 val) { return (val & ~(1 << bit)); }
-	u8		SET_N_8(u8 bit, u8 val) { return (val | (1 << bit)); }
+	#include "Instructions/System.inl"
+	#include "Instructions/Prefixed.inl"
 
 	/* INSTRUCTIONS FUNCTIONS MESS */
 	void UNDEFINED() { std::cout << "GBMU: FATAL: UNDEFINED OPCODE; SYSTEM HALTED" << std::endl; debug_stop(); }
