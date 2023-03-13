@@ -177,6 +177,11 @@ void LCD::updatetile(u16 addr) {
     int tile = (addr >> 4) & 511;
     int     y = (addr >> 1) & 7;
 
+	// TODO: FIXED WEIRD TILES, NEED INVESTIGATIONS ON WHY
+	if (addr % 2)
+		return ;
+
+	std::cout << std::dec << "Updating tile " << tile << ", line number " << y << " at address " << std::hex << addr << "\n";
     for (int x = 0; x < 8; x++)
     {
         // get nth bit at addr and addr + 1 to determine the color in the palette
@@ -184,7 +189,6 @@ void LCD::updatetile(u16 addr) {
         m_tileset[tile][y][x] = static_cast<u8>(((m_video_ram[addr]     & bitmask) ? 1 : 0) +
                                                 ((m_video_ram[addr + 1] & bitmask) ? 2 : 0));
     }
-
 }
 
 void LCD::renderscan()
