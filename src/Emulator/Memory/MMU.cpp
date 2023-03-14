@@ -57,6 +57,11 @@ u8 MMU::get_byte_at(u16 memory_location)
                         // memory is normally not mapped, and also returns junk on a physical console
                         return m_emu->get_lcd().read_byte_at_oam(memory_location & 0x9F);
                 case 0xF00:
+					if (memory_location == 0xFFFF)
+						return m_emu->get_CPU().read_ie();
+					// interrupt flags
+					if (memory_location == 0xFF0F)
+						return m_emu->get_CPU().read_if();
                     // ZERO PAGE RAM
                     if (memory_location >= 0xFF80)
                     {
@@ -135,11 +140,18 @@ void MMU::set_byte_at(u16 memory_location, u8 value) {
                         m_emu->get_lcd().write_byte_at_oam(memory_location & 0x9F, value);
                         break;
                 case 0xF00:
+					// joypad write
 					if (memory_location == 0xFF00)
 						m_emu->get_joypad().write_byte(value);
 					// SERIAL OUTPUT
-					if (memory_location == 0xFF01)
-						std::cout << (char) value;
+					//if (memory_location == 0xFF01)
+					//	std::cout << (char) value;
+					// interrupt enable
+					if (memory_location == 0xFFFF)
+						m_emu->get_CPU().write_ie(value);
+					// interrupt flags
+					if (memory_location == 0xFF0F)
+						m_emu->get_CPU().write_if(value);
 					// UNMAP BIOS
 					if (memory_location == 0xFF50 && m_bios_mapped)
 					{

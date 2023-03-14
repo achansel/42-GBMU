@@ -17,6 +17,14 @@ enum Flag {ZeroFlag = 7, SubstractFlag = 6, HalfCarryFlag = 5, CarryFlag = 4};
 
 class CPU {
 public:
+	enum Interrupt {
+		VBLANK	= 1 << 0,
+		STAT	= 1 << 1,
+		TIMER	= 1 << 2,
+		SERIAL	= 1 << 3,
+		JOYPAD	= 1 << 4
+	};
+
     explicit CPU(Emulator *emu);
 	~CPU() {std::cout << "~CPU() was called\nPC: " << std::hex << PC << std::endl; }
 
@@ -27,7 +35,8 @@ public:
     void write_byte_at_working_ram(u16 position, u8 value);
 
 	u8 read_if();
-	void write_if(u8 value);
+	void write_if(u8 val);
+	void request_interrupt(Interrupt i);
 
 	u8 read_ie();
 	void write_ie(u8 value);
@@ -47,6 +56,8 @@ private:
 
 	void fill_instructions_table();
 	void fill_instructions_table_cb();
+
+	void service_interrupt(Interrupt i);
 
 	std::array<InstructionPtr, 256> m_instructions_cb;
 	std::array<InstructionPtr, 256> m_instructions;

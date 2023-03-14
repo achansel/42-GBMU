@@ -379,6 +379,7 @@ void CPU::fill_instructions_table_cb()
 	ie[0x3F] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::SRL, RegisterA>;
 
 	/* See comment in Prefixed.inl, above their implementation */
+	/* Maybe use a compile time for loop to fill them, allowing to specify the opcode in order to perform compile time register and bit deduction */
 	std::fill(ie.begin() + 0x40, ie.begin() + 0x80, &CPU::PREFIXED_OP_DEDUCE<PREFIXEDOP::BIT>);
 	std::fill(ie.begin() + 0x80, ie.begin() + 0xC0, &CPU::PREFIXED_OP_DEDUCE<PREFIXEDOP::RES>);
 	std::fill(ie.begin() + 0xC0, ie.end(), 			&CPU::PREFIXED_OP_DEDUCE<PREFIXEDOP::SET>);

@@ -6,8 +6,8 @@ Emulator::Emulator(const std::string& path_to_game):
     m_cartridge(path_to_game),
     m_mmu(this),
     m_cpu(this),
-    m_joypad(),
-    m_lcd()
+    m_joypad(this),
+    m_lcd(this)
 {
     int rendererFlags;
 	rendererFlags = SDL_RENDERER_ACCELERATED;
@@ -32,7 +32,7 @@ Emulator::Emulator(const std::string& path_to_game):
         exit(1);
 	}
 
-    m_framebuffer = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, 160, 144);
+    m_framebuffer = SDL_CreateTexture(m_renderer, SDL_PIXELFORMAT_ABGR32, SDL_TEXTUREACCESS_STREAMING, 160, 144);
     if (!m_framebuffer)
     {
         printf("Failed to create texture: %s\n", SDL_GetError());

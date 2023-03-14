@@ -23,6 +23,7 @@ void CPU::tick()
     execute_next_instruction();
     //saveafterinstruction();
     step_lcd();
+	m_tclock = 0;
 }
 
 void CPU::debug_stop()
@@ -73,7 +74,66 @@ inline void CPU::execute_next_instruction()
 		auto operation = m_instructions[m_opcode];
 		(this->*operation)();
     }
+
+	// Quick hack to not service interrupt right after it was enabled
+	if (m_opcode == 0xFB || m_opcode == 0xD9)
+		return ;
+
+	// We have to handle an interrupt
+	if (m_ime && (m_ie_reg & m_if_reg))
+	{
+		// Maybe use for loop
+		u8 masked = m_ie_reg & m_if_reg;
+
+		if (masked & Interrupt::VBLANK)
+			service_interrupt(Interrupt::VBLANK);
+		else if (masked & Interrupt::STAT)
+			service_interrupt(Interrupt::STAT);
+		else if (masked & Interrupt::TIMER)
+			service_interrupt(Interrupt::TIMER);
+		else if (masked & Interrupt::SERIAL)
+			service_interrupt(Interrupt::SERIAL);
+		else if (masked & Interrupt::JOYPAD)
+			service_interrupt(Interrupt::JOYPAD);
+	}
 }
+
+void CPU::service_interrupt(Interrupt i)
+{
+	if (i != VBLANK)
+		std::cout << "GBMU: CPU: INTERRUPT " << i << " WAS SERVICED\n";
+
+	// NOPS
+	NOP();
+	NOP();
+	
+	// PUSH ADDRESS OF CURRENT PLACE
+	u16 sp = GET_COMPOSED_REG(RegisterSP) - 2;
+	SET_COMPOSED_REG(RegisterSP, sp);
+	MOV_ADDR_16(sp, PC);
+
+	// DISABLE INTERRUPTS, REMOVE FLAG AND JUMP TO HANDLER
+	m_ime = false;
+	m_if_reg &= ~i;
+	if (i == Interrupt::VBLANK)
+		_JUMP(0x40);
+	else if (i == Interrupt::STAT)
+		_JUMP(0x48);
+	else if (i == Interrupt::TIMER)
+		_JUMP(0x50);
+	else if (i == Interrupt::SERIAL)
+		_JUMP(0x58);
+	else if (i == Interrupt::JOYPAD)
+		_JUMP(0x60);
+}
+
+u8 CPU::read_if() { return (m_if_reg); }
+void CPU::write_if(u8 value) { m_if_reg = value; }
+void CPU::request_interrupt(Interrupt i) { m_if_reg |= static_cast<u8>(i); }
+
+u8 CPU::read_ie() { return (m_ie_reg); }
+void CPU::write_ie(u8 value) { m_ie_reg = value; }
+
 
 u8 CPU::read_byte_at_working_ram(u16 position) {
     return m_working_ram[position];
