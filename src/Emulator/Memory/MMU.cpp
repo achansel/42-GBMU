@@ -108,7 +108,8 @@ void MMU::set_byte_at(u16 memory_location, u8 value) {
         case 0x8000:
         case 0x9000:
             m_emu->get_lcd().write_byte(memory_location, value);
-            m_emu->get_lcd().updatetile(memory_location);
+			if (memory_location < 0x9800)
+            	m_emu->get_lcd().updatetile(memory_location);
             break;
 
 		case 0xA000:

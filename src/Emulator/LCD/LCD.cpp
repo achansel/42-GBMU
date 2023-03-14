@@ -1,6 +1,8 @@
 #include "LCD.hpp"
 #include <Emulator/Emulator.hpp>
 
+#include <algorithm>
+
 LCD::LCD(Emulator *emu)
 	: m_emu(emu)
 {
@@ -112,7 +114,6 @@ u8 LCD::read_byte(u16 memory_loc) {
 				d = 	((m_mode)		   			<< 0) |
 						((m_lyc == m_line) 		<< 2) |
 						((m_stat_int_sources) 	<< 3);
-				std::cout << "GBMU: LCD: READ FROM FF41 WITH RETURNED VALUE " << std::hex << +d << std::endl;
 				return (d);
             case 0xFF42:
                 return m_scy;
@@ -121,7 +122,6 @@ u8 LCD::read_byte(u16 memory_loc) {
             case 0xFF44:
                 return static_cast<u8>(m_line);
 			case 0xFF45:
-				std::cout << "GBMU: LCD: READ FROM LYC " << std::hex << +m_lyc << std::endl;
 				return m_lyc;
 			case 0xFF46:
 				return m_dma;
@@ -177,7 +177,6 @@ void LCD::write_byte(u16 memory_loc, u8 value) {
                 m_lcdon		= (value >> 7)	& 1;
                 break;
 			case 0xFF41:
-				std::cout << "Write to ff41 with value " << std::hex << +value << std::endl;
 				m_stat_int_sources = (value >> 3) & 0xF;
 				break;
             case 0xFF42:
@@ -187,7 +186,6 @@ void LCD::write_byte(u16 memory_loc, u8 value) {
                 m_scx = value;
                 break;
 			case 0xFF45:
-				std::cout << "GBMU: LCD: WRITE TO LYC " << std::hex << +m_lyc << std::endl;
 				m_lyc = value;
 				break ;
 			case 0xFF46:
@@ -269,12 +267,15 @@ void LCD::write_byte_at_oam(u8 memory_loc, u8 value) {
 	Sprite &s = m_sprites[memory_loc >> 2];
 
 	//std::cout << "GBMU: LCD: WRITING SPRITE " << std::dec << +(memory_loc >> 2) << " in OAM" << std::endl;
-	switch (memory_loc & 2)
+	//if (value != 0)
+	//	std::cout << "GBMU: WRITING TO SPRITE " << +(memory_loc >> 2) << ", full address: " << std::hex << +memory_loc << std::endl;
+	switch (memory_loc & 3)
 	{
 		case 0:
 			s.y = value;
 			break;
 		case 1:
+			//std::cout << "Sprite " << +(memory_loc >> 2) << ", writing " << std::hex << value << " to x" << std::endl;
 			s.x = value;
 			break;
 		case 2:
@@ -303,8 +304,8 @@ void LCD::reset() {
 void LCD::updatetile(u16 addr) {
     addr &= 0x1FFE;
 
-    int tile = (addr >> 4) & 511;
-    int     y = (addr >> 1) & 7;
+    int	tile = (addr >> 4) & 0x1FF;
+    int		y = (addr >> 1) & 7;
 
     for (int x = 0; x < 8; x++)
     {
@@ -317,7 +318,25 @@ void LCD::updatetile(u16 addr) {
 
 void LCD::renderscan()
 {
-	// TODO: Draw sprites with the m_sprites array
+	// TODO: FIX WHEN LCDC.4 is 0, I think it will not work by default
+	// TODO: DRAW WINDOW
+
+	// select sprites
+	std::vector<std::reference_wrapper<Sprite>> selection;
+	selection.reserve(10);
+	for (Sprite &s : m_sprites)
+	{
+		if (m_line < s.y && m_line >= s.y - 16)
+		{
+			if (m_spritesz || (m_line < s.y - 8))
+				selection.push_back(s);
+			if (selection.size() == 10)
+				break ;
+		}
+	}
+	/* TODO: FIX: Doesnt keep order of apparition from OAM in case two sprites have the same x */
+	std::sort(selection.begin(), selection.end(), [](std::reference_wrapper<Sprite> &a, std::reference_wrapper<Sprite> &b) { return (a.get().x < b.get().x); });
+
 
     // select right background map
     int map_offset = m_bgmap ? 0x1C00 : 0x1800;
@@ -330,14 +349,51 @@ void LCD::renderscan()
     u8            y = (m_line + m_scy) & 7;
     u8            x = m_scx & 7;
 
-    int framebuffer_offset = (m_line - 1) * 160;
+    int framebuffer_offset = m_line * 160;
 
-    unsigned short tile = m_video_ram[map_offset + line_offset];
+    u16 tile = m_video_ram[map_offset + line_offset];
+
+	auto s = selection.begin();
 
     for (size_t i = 0; i < 160; i++)
     {
         // Re-map the tile pixel through the palette and put it to screen
-        m_framebuffer[framebuffer_offset++] = m_pal[m_tileset[tile][y][x]];
+        m_framebuffer[framebuffer_offset] = m_pal[m_tileset[tile][y][x]];
+
+		// Sprite appears here
+		// TODO: FLIPPING OF SPRITES & HANDLE BG AND WINDOW OVER OBJ FLAG
+		// TODO: MAYBE IMPROVE ALGO BY KEEPING AN X IN MEMORY ?
+		if (!selection.empty() && s != selection.end() && s->get().x - 8 <= (int)(i) && s->get().x > (int)(i))
+		{
+			// Get tile and x and y coordinate inside of tile
+			u8	tile_x		= i			- (s->get().x - 8);
+			u8	tile_y		= m_line	- (s->get().y - 16);
+			u16 sprite_tile	= s->get().tile_index;
+
+			// 2 tiles tall sprites
+			if (m_spritesz)
+			{
+				sprite_tile = (sprite_tile & 0xFE) + (tile_y >= 8);
+				tile_y %= 8;
+			}
+
+			// Check if we have a visible pixel
+			u8 col = m_tileset[sprite_tile][tile_y][tile_x];
+			if (col)
+			{
+				// Get color mapped through palette and show it
+				if (s->get().palette)
+					m_framebuffer[framebuffer_offset] = m_obj_pal1[m_tileset[sprite_tile][tile_y][tile_x]];
+				else
+					m_framebuffer[framebuffer_offset] = m_obj_pal0[m_tileset[sprite_tile][tile_y][tile_x]];
+			}
+
+			// Go to next sprite if this x marks the end of it
+			if (i + 1 == s->get().x)
+				s++;
+		}
+
+		framebuffer_offset++;
 
         // Go to next tile
         x++;

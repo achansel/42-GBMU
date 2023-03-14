@@ -80,7 +80,7 @@ private:
 	u32 m_obj_pal0[3];
 	u32 m_obj_pal1[3];
 
-    u8 m_tileset[512][8][8];
+    u8 m_tileset[384][8][8];
 };
 
 
