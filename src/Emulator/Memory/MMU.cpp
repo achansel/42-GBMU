@@ -103,7 +103,17 @@ u16 MMU::get_word_at(u16 memory_location)
 void MMU::set_byte_at(u16 memory_location, u8 value) {
 	//std::cout << "GBMU: MMU: Memory write at " << std::hex << memory_location << ": " << +value << std::endl;
     switch (memory_location & 0xF000)
-    {
+	{
+		case 0x0000:
+		case 0x1000:
+		case 0x2000:
+		case 0x3000:
+		case 0x4000:
+		case 0x5000:
+		case 0x6000:
+		case 0x7000:
+			m_emu->get_cartridge().write_byte(memory_location, value);
+			break ;
         // Video Ram (8K)
         case 0x8000:
         case 0x9000:

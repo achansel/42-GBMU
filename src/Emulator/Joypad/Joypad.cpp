@@ -31,7 +31,7 @@ u8 Joypad::read_byte()
 
 void Joypad::key_down(SDL_Event e)
 {
-	//u8	b = this->read_byte();
+	u8	b = this->read_byte();
 
     switch (e.key.keysym.sym)
     {
@@ -63,8 +63,8 @@ void Joypad::key_down(SDL_Event e)
             break;
     }
 
-	//if (b != this->read_byte())
-	//	m_emu->get_CPU().request_interrupt(CPU::Interrupt::JOYPAD);
+	if (b != this->read_byte())
+		m_emu->get_CPU().request_interrupt(CPU::Interrupt::JOYPAD);
 }
 
 void Joypad::key_up(SDL_Event e)

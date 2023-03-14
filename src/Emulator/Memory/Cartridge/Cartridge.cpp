@@ -64,7 +64,7 @@ u8 Cartridge::read_byte_at_ext_ram(u16 memory_loc)
 }
 
 void Cartridge::write_byte(u16 memory_loc, u8 value) {
-    std::cout << "\nGBMU Cartridge write: memory Location: " << std::hex << memory_loc << " value:" << +value << std::endl;
+    std::cout << "\nGBMU: CARTRIDGE: WRITE AT MEMORY LOC " << std::hex << memory_loc << " value:" << +value << std::endl;
     //m_rom[memory_loc] = value;
 }
 

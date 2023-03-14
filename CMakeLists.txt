@@ -38,8 +38,8 @@ if (CMAKE_BUILD_TYPE STREQUAL Release)
   target_compile_options(EGBoy PRIVATE -Wall -O3 -s)
 else()
   # When compiling as debug
-  target_compile_options(EGBoy PRIVATE -Wall -Wextra -Werror) #-g -fsanitize=address)
-  target_link_options(EGBoy PRIVATE) #-g -fsanitize=address)
+  target_compile_options(EGBoy PRIVATE -Wall -Wextra -Werror -g -fsanitize=address)
+  target_link_options(EGBoy PRIVATE -g -fsanitize=address)
   target_compile_definitions(EGBoy PRIVATE -DDBG)
 endif()
 
