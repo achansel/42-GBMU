@@ -35,7 +35,7 @@ void Joypad::key_down(SDL_Event e)
 
     switch (e.key.keysym.sym)
     {
-        case SDLK_s:
+        case SDLK_z:
             m_rows[0] &= ~(0x1); // A gameboy key
             break;
         case SDLK_x:
@@ -70,7 +70,7 @@ void Joypad::key_down(SDL_Event e)
 void Joypad::key_up(SDL_Event e)
 {
     switch (e.key.keysym.sym) {
-        case SDLK_s:
+        case SDLK_z:
             m_rows[0] |= 0x1; // A gameboy key
             break;
         case SDLK_x:

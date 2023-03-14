@@ -76,6 +76,9 @@ private:
 	u8	m_dma_offset;
 
     u8 m_scx, m_scy;
+
+	// https://lospec.com/palette-list
+	// bonnes palettes
     u32 m_pal[4];
 	u32 m_obj_pal0[3];
 	u32 m_obj_pal1[3];
