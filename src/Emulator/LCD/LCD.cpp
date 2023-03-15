@@ -8,19 +8,31 @@ LCD::LCD(Emulator *emu)
 {
 }
 
+void LCD::perform_dma(u8 t)
+{
+    u16 src = (m_dma << 8) + m_dma_offset;
+    u8 	nbytes = (t / 4);
+
+    for (u8 c = 0; c < nbytes && m_dma_cycles_left; c++, m_dma_cycles_left -= 4)
+        write_byte_at_oam(m_dma_offset++, m_emu->get_MMU().get_byte_at(src + c));
+}
+
+void LCD::request_interrupts()
+{
+    if (m_mode == Mode::VBLANK)
+		m_emu->get_CPU().request_interrupt(CPU::Interrupt::VBLANK);
+	if (m_stat_int_sources & 0x80 && m_line == m_lyc)
+		m_emu->get_CPU().request_interrupt(CPU::Interrupt::STAT);
+	else if (m_mode != LINE_BACKGROUND && (static_cast<u8>(1 << (3 + m_mode)) & m_stat_int_sources))
+		m_emu->get_CPU().request_interrupt(CPU::Interrupt::STAT);
+}
+
 void LCD::update(u8 t) 
 {
     if (m_lcdon) 
     {
 		if (m_dma_cycles_left)
-		{
-			u16 src = (m_dma << 8) + m_dma_offset;
-			u8 	nbytes = (t / 4);
-
-			//std::cout << "GBMU: LCD: DOING DMA TRANSFER TO OAM; bytes transfered: " << std::hex << +m_dma_offset << ", bytes soon to be transfered on this iter: " << +nbytes << ", at address: " << src << std::endl; 
-			for (u8 c = 0; c < nbytes && m_dma_cycles_left; c++, m_dma_cycles_left -= 4)
-				write_byte_at_oam(m_dma_offset++, m_emu->get_MMU().get_byte_at(src + c));
-		}
+            perform_dma(t);
 
         m_modeclock += t;
         switch (m_mode) {
@@ -35,22 +47,21 @@ void LCD::update(u8 t)
                     m_mode = Mode::HBLANK;
                     m_modeclock = 0;
                     renderscan();
+                    request_interrupts();
                 }
                 break;
             case Mode::HBLANK:
                 if (m_modeclock >= 204) {
                     m_modeclock = 0;
                     m_line++;
-                    if (m_line == 143) {
+                    if (m_line == 144) {
 		                need_to_draw = true;
                         m_mode = Mode::VBLANK;
-						m_emu->get_CPU().request_interrupt(CPU::Interrupt::VBLANK);
+						request_interrupts();
                     } 
                     else {
-						// Here to request the stat interrupt
-						if (m_stat_int_sources & 0x80 && m_line == m_lyc)
-							m_emu->get_CPU().request_interrupt(CPU::Interrupt::STAT);
                         m_mode = Mode::LINE_SPRITES;
+                        request_interrupts();
                     }
 
                 }
@@ -61,34 +72,16 @@ void LCD::update(u8 t)
                     m_line++;
                     if (m_line > 153) {
                         m_line = 0;
-						// Here to request the stat interrupt
-						if (m_stat_int_sources & 0x80 && m_line == m_lyc)
-							m_emu->get_CPU().request_interrupt(CPU::Interrupt::STAT);
                         m_mode = Mode::LINE_SPRITES;
+                        request_interrupts();
                     }
                 }
                 break;
         }
-
-		/* STAT interrupt for OAM, VBLANK AND HBLANK */
-		if (m_mode != LINE_BACKGROUND && (static_cast<u8>(1 << (3 + m_mode)) & m_stat_int_sources))
-			m_emu->get_CPU().request_interrupt(CPU::Interrupt::STAT);
     }
 }
 
-#include <iostream>
-
 void    *LCD::get_fb() {
-    // DEBUG, RENDER TILEMAP ON SCREEN
-    /*for (int i = 0; i < 384; i++) {
-        for (int j = 0; j < 8; j++) {
-            for (int k = 0; k < 8; k++) {
-                std::cout << (unsigned short) m_tileset[i][j][k];
-            }
-        }
-        std::cout << " ";
-    }
-    std::cout << "\n\n\n";*/
     return (m_framebuffer);
 }
 
@@ -138,7 +131,6 @@ u8 LCD::read_byte(u16 memory_loc) {
 u8 LCD::read_byte_at_oam(u8 memory_loc) {
     Sprite &s = m_sprites[memory_loc >> 2];
 
-	//std::cout << "GBMU: LCD: READING SPRITE " << +(memory_loc >> 2) << " in OAM" << std::endl;
 	switch (memory_loc & 3)
 	{
 		case 0:
@@ -266,16 +258,12 @@ void LCD::write_byte(u16 memory_loc, u8 value) {
 void LCD::write_byte_at_oam(u8 memory_loc, u8 value) {
 	Sprite &s = m_sprites[memory_loc >> 2];
 
-	//std::cout << "GBMU: LCD: WRITING SPRITE " << std::dec << +(memory_loc >> 2) << " in OAM" << std::endl;
-	//if (value != 0)
-	//	std::cout << "GBMU: WRITING TO SPRITE " << +(memory_loc >> 2) << ", full address: " << std::hex << +memory_loc << std::endl;
 	switch (memory_loc & 3)
 	{
 		case 0:
 			s.y = value;
 			break;
 		case 1:
-			//std::cout << "Sprite " << +(memory_loc >> 2) << ", writing " << std::hex << value << " to x" << std::endl;
 			s.x = value;
 			break;
 		case 2:
@@ -304,12 +292,11 @@ void LCD::reset() {
 void LCD::updatetile(u16 addr) {
     addr &= 0x1FFE;
 
-    int	tile = (addr >> 4) & 0x1FF;
-    int		y = (addr >> 1) & 7;
+    int	tile    = (addr >> 4) & 0x1FF;
+    int		y   = (addr >> 1) & 7;
 
     for (int x = 0; x < 8; x++)
     {
-        // get nth bit at addr and addr + 1 to determine the color in the palette
         unsigned char bitmask = 1 << (7 - x);
         m_tileset[tile][y][x] = static_cast<u8>(((m_video_ram[addr]     & bitmask) ? 1 : 0) +
                                                 ((m_video_ram[addr + 1] & bitmask) ? 2 : 0));
@@ -321,14 +308,14 @@ void LCD::renderscan()
 	// TODO: FIX WHEN LCDC.4 is 0, I think it will not work by default
 	// TODO: DRAW WINDOW
 
-	// select sprites
+	// Select sprites
 	std::vector<std::reference_wrapper<Sprite>> selection;
 	selection.reserve(10);
 	for (Sprite &s : m_sprites)
 	{
 		if (m_line < s.y && m_line >= s.y - 16)
 		{
-			if (m_spritesz || (m_line < s.y - 8))
+			if (m_spritesz || (m_line < s.y - 8))  // sprite displayed on current y
 			{
 				selection.push_back(s);
 				if (selection.size() == 10)

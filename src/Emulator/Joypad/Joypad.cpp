@@ -20,7 +20,6 @@ void Joypad::write_byte(u8 value)
 
 u8 Joypad::read_byte()
 {
-	//std::cout << "GBMU: JOYPAD: READ OF BYTES FROM " << std::hex << m_emu->get_CPU().PC << std::endl;
     switch (m_column)
     {
         case 1: return m_rows[0];

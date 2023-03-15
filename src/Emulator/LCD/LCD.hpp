@@ -26,6 +26,9 @@ public:
     void write_byte(u16 memory_loc, u8 value);
     void write_byte_at_oam(u8 memory_loc, u8 value);
 
+	void request_interrupts();
+	void perform_dma(u8 tclock);
+
     void reset();
     void updatetile(u16 addr);
     void renderscan();
@@ -44,7 +47,6 @@ private:
 	}
 
 	std::array<u8, 8192> m_video_ram{0};
-	//std::array<u8, 160> m_oam{0};
 
 	struct Sprite {
 		Sprite() = default;
@@ -78,7 +80,7 @@ private:
     u8 m_scx, m_scy;
 
 	// https://lospec.com/palette-list
-	// bonnes palettes
+	// good pals
     u32 m_pal[4];
 	u32 m_obj_pal0[3];
 	u32 m_obj_pal1[3];
