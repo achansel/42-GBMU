@@ -139,7 +139,7 @@ u8 LCD::read_byte_at_oam(u8 memory_loc) {
     Sprite &s = m_sprites[memory_loc >> 2];
 
 	//std::cout << "GBMU: LCD: READING SPRITE " << +(memory_loc >> 2) << " in OAM" << std::endl;
-	switch (memory_loc & 2)
+	switch (memory_loc & 3)
 	{
 		case 0:
 			return (s.y);
@@ -329,9 +329,11 @@ void LCD::renderscan()
 		if (m_line < s.y && m_line >= s.y - 16)
 		{
 			if (m_spritesz || (m_line < s.y - 8))
+			{
 				selection.push_back(s);
-			if (selection.size() == 10)
-				break ;
+				if (selection.size() == 10)
+					break ;
+			}
 		}
 	}
 	/* TODO: FIX: Doesnt keep order of apparition from OAM in case two sprites have the same x */

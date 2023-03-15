@@ -17,7 +17,7 @@ void ADD_REG16_REG16()
 
 	u32 res = GET_COMPOSED_REG(dst) + GET_COMPOSED_REG(src);
 	SET_FLAG(SubstractFlag, 0);
-	SET_FLAG(HalfCarryFlag, (res >> 8) & 1);
+	SET_FLAG(HalfCarryFlag, (res >> 12) & 1);
 	SET_FLAG(CarryFlag, (res >> 16) & 1);
 	SET_COMPOSED_REG(dst, static_cast<u16>(res));
 }
@@ -30,8 +30,8 @@ void ADD_SP_IMM8()
 	SET_REG(RegisterSP, static_cast<u16>(n));
 	SET_FLAG(ZeroFlag, 0);
 	SET_FLAG(SubstractFlag, 0);
-    SET_FLAG(HalfCarryFlag, !!(n & 0x100));
-    SET_FLAG(CarryFlag,		!!(n & 0x10000));
+    SET_FLAG(HalfCarryFlag, !!(n & 0x10));
+    SET_FLAG(CarryFlag,		!!(n & 0x100));
 }
 
 enum class ALUOP {

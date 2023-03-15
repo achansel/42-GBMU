@@ -31,7 +31,7 @@ u8 MMU::get_byte_at(u16 memory_location)
         case 0x9000:
             return m_emu->get_lcd().read_byte(memory_location);
 
-        // Cartridge External Ram (Unmapped)
+        // Cartridge External Ram
         case 0xA000:
         case 0xB000:
             return m_emu->get_cartridge().read_byte_at_ext_ram(memory_location);
@@ -39,17 +39,12 @@ u8 MMU::get_byte_at(u16 memory_location)
         // Working Ram (8K)
         case 0xC000:
         case 0xD000:
-        case 0xE000:
             return m_emu->get_CPU().read_byte_at_working_ram(memory_location & 0x1FFF);
 
         // Working Ram Shadow, OAM, I/O, Zero Page Ram
         case 0xF000:
             switch (memory_location & 0x0F00)
             {
-                // Working Ram Shadow
-                case 0x000: case 0x100: case 0x200: case 0x300: case 0x400: case 0x500: case 0x600: 
-                case 0x700: case 0x800: case 0x900: case 0xA00: case 0xB00: case 0xC00: case 0xD00:
-                        return m_emu->get_CPU().read_byte_at_working_ram(memory_location & 0x1FFF);
                 // OAM
                 case 0xE00:
                         // Actually a quick impl here, if one tries to read above the OAM, (0xFEA0 to 0xFF00),
@@ -82,12 +77,12 @@ u8 MMU::get_byte_at(u16 memory_location)
                         }
                     }
                 default:
-                    return 0xFF;
+                    return 0x0;
             }
 
         // We didn't match any case
         default:
-            return 0xFF;
+            return 0x0;
     }        
 }
 
@@ -137,12 +132,6 @@ void MMU::set_byte_at(u16 memory_location, u8 value) {
         case 0xF000:
             switch (memory_location & 0x0F00)
             {
-                // Working Ram Shadow
-                case 0x000: case 0x100: case 0x200: case 0x300: case 0x400: case 0x500: case 0x600: 
-                case 0x700: case 0x800: case 0x900: case 0xA00: case 0xB00: case 0xC00: case 0xD00:
-                        m_emu->get_CPU().write_byte_at_working_ram(memory_location & 0x1FFF, value);
-                        break;
-
                 // OAM
                 case 0xE00:
                         // Actually a quick impl here, if one tries to read above the OAM, (0xFEA0 to 0xFF00),

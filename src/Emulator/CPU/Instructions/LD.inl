@@ -31,7 +31,18 @@ template<Register dst, Register src>
 ALWAYS_INLINE void MOV_REG_ADDR_REG() 					{ MOV_REG_8(dst, this->GET_BYTE(0xFF00 + GET_REG(src))); }
 
 template<ComposedRegister dst>
-ALWAYS_INLINE void POP()								{ u16 sp = GET_COMPOSED_REG(RegisterSP); MOV_REG_16(dst, this->GET_WORD(sp)); sp += 2; SET_COMPOSED_REG(RegisterSP, sp); }
+ALWAYS_INLINE void POP()
+{
+	u16 sp = GET_COMPOSED_REG(RegisterSP);
+	u16 w = this->GET_WORD(sp);
+
+	if constexpr (dst == RegisterAF)
+		w &= 0xFFF0;
+	MOV_REG_16(dst, w);
+	sp += 2;
+	SET_COMPOSED_REG(RegisterSP, sp);
+}
+
 template<ComposedRegister src>
 ALWAYS_INLINE void PUSH()								{ u16 sp = GET_COMPOSED_REG(RegisterSP) - 2; SET_COMPOSED_REG(RegisterSP, sp); m_tclock += 4; MOV_ADDR_16(sp, this->GET_COMPOSED_REG(src)); }
 
@@ -51,8 +62,8 @@ void LD_HL_SP_X_IMM8()
 	u32 n = GET_COMPOSED_REG(RegisterSP) + static_cast<s8>(FETCH_BYTE());
 	SET_FLAG(ZeroFlag, 0);
 	SET_FLAG(SubstractFlag, 0);
-	SET_FLAG(HalfCarryFlag, !!(n & 0x100));
-	SET_FLAG(CarryFlag,		!!(n & 0x10000));
+	SET_FLAG(HalfCarryFlag, !!(n & 0x10));
+	SET_FLAG(CarryFlag,		!!(n & 0x100));
 
 	MOV_REG_16(RegisterHL, static_cast<u16>(n));
 }
