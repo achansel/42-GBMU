@@ -66,7 +66,7 @@ u8 SRA(u8 operand)
 u8 SLA(u8 operand)
 {
 	u8 a = operand;
-	a = ((a << 1) & ~0x80) | (a & 0x80);
+	a <<= 1;
 
 	SET_FLAG(ZeroFlag, a == 0);
 	SET_FLAG(SubstractFlag, 0);
