@@ -66,7 +66,7 @@ private:
 	u8				m_mask_rom_version_number;
 
 	u8*	m_ram;
-	u32 m_ram_size;
+	//u32 m_ram_size;
 	
 	u8* m_rom;
     u32 m_rom_size;

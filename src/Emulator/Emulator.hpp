@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include <SDL.h>
 
 #include "CPU/CPU.hpp"
 #include "Memory/MMU.hpp"
@@ -39,10 +38,6 @@ private:
     Joypad m_joypad;
     LCD m_lcd;
 	Timer m_timer;
-
-   	SDL_Renderer    *m_renderer;
-	SDL_Window      *m_window;
-    SDL_Texture     *m_framebuffer;
 };
 
 
