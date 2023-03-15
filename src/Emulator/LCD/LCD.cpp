@@ -365,6 +365,7 @@ void LCD::renderscan()
 		// Sprite appears here
 		// TODO: FLIPPING OF SPRITES & HANDLE BG AND WINDOW OVER OBJ FLAG
 		// TODO: MAYBE IMPROVE ALGO BY KEEPING AN X IN MEMORY ?
+		// TODO: Add uniqueness on x on the sprites, otherwise this will bug on two sprites in the same x coord, by never skipping the 2nd one
 		if (!selection.empty() && s != selection.end() && s->get().x - 8 <= (int)(i) && s->get().x > (int)(i))
 		{
 			// Get tile and x and y coordinate inside of tile
