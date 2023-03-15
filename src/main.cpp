@@ -13,7 +13,7 @@ SDL_Texture     *m_framebuffer;
 int init_window()
 {
     int rendererFlags;
-	rendererFlags = SDL_RENDERER_ACCELERATED;
+	rendererFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
@@ -70,14 +70,13 @@ int main(int argc, char** argv)
         }
         if (emu.get_lcd().need_to_draw)
         {
+            emu.get_lcd().need_to_draw = false;
 
             // TODO: Investigate: Maybe protect from reading a frame buffer that is being modified ?
             SDL_UpdateTexture(m_framebuffer, NULL, emu.get_lcd().get_fb(), 160 * sizeof(u32));
             SDL_RenderClear(m_renderer);
             SDL_RenderCopy(m_renderer, m_framebuffer, NULL, NULL);
             SDL_RenderPresent(m_renderer);
-
-            emu.get_lcd().need_to_draw = false;
         }
     }
 

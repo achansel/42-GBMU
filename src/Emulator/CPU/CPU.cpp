@@ -20,6 +20,8 @@ void CPU::saveafterinstruction()
 
 void CPU::tick()
 {
+	while (m_emu->get_lcd().need_to_draw && !m_exit)
+		;
     execute_next_instruction();
     //saveafterinstruction();
     step_lcd();
