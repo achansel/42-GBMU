@@ -93,12 +93,12 @@ u8 SWAP(u8 operand)
 u8 SRL(u8 operand)
 {
 	u8 a = operand;
-	a <<= 1;
+	a >>= 1;
 
 	SET_FLAG(ZeroFlag, a == 0);
 	SET_FLAG(SubstractFlag, 0);
 	SET_FLAG(HalfCarryFlag, 0);
-	SET_FLAG(CarryFlag, (operand >> 7) & 0x01);
+	SET_FLAG(CarryFlag, operand & 0x01);
 
 	return a;
 }
