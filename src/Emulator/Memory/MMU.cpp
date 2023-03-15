@@ -64,6 +64,8 @@ u8 MMU::get_byte_at(u16 memory_location)
                     }
 					else if (memory_location == 0xFF00)
 						return m_emu->get_joypad().read_byte();
+					else if (memory_location >= 0xFF04 && memory_location <= 0xFF07)
+						return m_emu->get_timer().read_byte(memory_location);
                     // IO REGS
                     else
                     {
@@ -162,6 +164,8 @@ void MMU::set_byte_at(u16 memory_location, u8 value) {
                     {
                         m_zero_page_ram[memory_location & 0x7F] = value;
                     }
+					else if (memory_location >= 0xFF04 && memory_location <= 0xFF07)
+						m_emu->get_timer().write_byte(memory_location, value);
                     // IO REGS
                     else
                     {

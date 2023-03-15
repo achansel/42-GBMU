@@ -7,7 +7,8 @@ Emulator::Emulator(const std::string& path_to_game):
     m_mmu(this),
     m_cpu(this),
     m_joypad(this),
-    m_lcd(this)
+    m_lcd(this),
+	m_timer(this)
 {
     int rendererFlags;
 	rendererFlags = SDL_RENDERER_ACCELERATED;
@@ -93,6 +94,10 @@ CPU &Emulator::get_CPU() {
 
 LCD &Emulator::get_lcd() {
     return m_lcd;
+}
+
+Timer &Emulator::get_timer() {
+    return m_timer;
 }
 
 Cartridge &Emulator::get_cartridge() {

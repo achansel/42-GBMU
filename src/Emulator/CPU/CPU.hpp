@@ -30,6 +30,7 @@ public:
 
     void tick();
     void step_lcd();
+	void step_timer();
 
     u8 read_byte_at_working_ram(u16 position);
     void write_byte_at_working_ram(u16 position, u8 value);
@@ -47,6 +48,8 @@ public:
     u16 PC;
 
 	void debug_stop();
+	//TODO: STOPPING OF THE CPU
+	bool is_stopped() { return (false); }
 private:
 	typedef void (CPU::*InstructionPtr)(void);
 

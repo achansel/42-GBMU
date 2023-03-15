@@ -58,6 +58,7 @@ target_sources(EGBoy PRIVATE
 			${SOURCE_FOLDER}/Emulator/CPU/Instructions/InstrCommon.cpp
 			${SOURCE_FOLDER}/Emulator/CPU/Instructions/InstrTable.cpp
             ${SOURCE_FOLDER}/Emulator/Joypad/Joypad.cpp
+			${SOURCE_FOLDER}/Emulator/Timer/Timer.cpp
             ${SOURCE_FOLDER}/Emulator/LCD/LCD.cpp
             ${SOURCE_FOLDER}/Emulator/Memory/MMU.cpp
             ${SOURCE_FOLDER}/Emulator/Memory/Cartridge/Cartridge.cpp)

@@ -23,6 +23,7 @@ void CPU::tick()
     execute_next_instruction();
     //saveafterinstruction();
     step_lcd();
+	step_timer();
 	m_tclock = 0;
 }
 
@@ -49,6 +50,11 @@ void CPU::debug_stop()
 inline void CPU::step_lcd()
 {
     m_emu->get_lcd().update(m_tclock);
+}
+
+inline void CPU::step_timer()
+{
+	m_emu->get_timer().step(m_tclock);
 }
 
 inline void CPU::fetch_instruction()

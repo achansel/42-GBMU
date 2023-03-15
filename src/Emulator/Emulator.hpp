@@ -12,6 +12,7 @@
 #include "CPU/CPU.hpp"
 #include "Memory/MMU.hpp"
 #include "Joypad/Joypad.hpp"
+#include "Timer/Timer.hpp"
 #include "LCD/LCD.hpp"
 #include "Memory/Cartridge/Cartridge.hpp"
 
@@ -28,6 +29,7 @@ public:
     MMU& get_MMU();
     CPU& get_CPU();
     LCD& get_lcd();
+	Timer& get_timer();
     Cartridge& get_cartridge();
     Joypad& get_joypad();
 private:
@@ -36,6 +38,7 @@ private:
     CPU m_cpu;
     Joypad m_joypad;
     LCD m_lcd;
+	Timer m_timer;
 
    	SDL_Renderer    *m_renderer;
 	SDL_Window      *m_window;
