@@ -6,6 +6,7 @@ MMU::MMU(Emulator* emu)
 {
 }
 
+// TODO: CLEAN and greatly improve readability of this switch statement
 u8 MMU::get_byte_at(u16 memory_location)
 {
 	//std::cout << "GBMU: MMU: Memory read at " << std::hex << memory_location << std::endl;
@@ -97,6 +98,7 @@ u16 MMU::get_word_at(u16 memory_location)
     return Bitwise::compose_word(get_byte_at(memory_location+1), get_byte_at(memory_location));
 }
 
+// TODO: CLEAN and greatly improve readability of this switch statement
 void MMU::set_byte_at(u16 memory_location, u8 value) {
 	//std::cout << "GBMU: MMU: Memory write at " << std::hex << memory_location << ": " << +value << std::endl;
     switch (memory_location & 0xF000)
