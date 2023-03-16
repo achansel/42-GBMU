@@ -57,7 +57,7 @@ void Timer::write_byte(u16 address, u8 value)
 			m_register_tma = value;
 			break ;
 		case 0xFF07:
-			m_tclock		= 0; //maybe needs removal?
+			//m_tclock		= 0; //maybe needs removal?
 			m_enabled		= (value >> 2) & 1;
 			m_clock_speed	= static_cast<ClockSpeed>((value >> 0) & 3);
 			break ;
