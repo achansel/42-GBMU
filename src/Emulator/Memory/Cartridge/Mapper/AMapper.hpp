@@ -3,14 +3,31 @@
 #include <Emulator/Util/Types.hpp>
 #include <Emulator/Util/File.hpp>
 
+#include <memory>
+
 class AMapper {
 public:
-	AMapper(std::string rom_path, u8 *ram, u32 ram_size, u8 *rom, u32 rom_size)
+	template<typename Mapper, typename ...Args>
+    static std::unique_ptr<AMapper> make(Args... args)
+    {
+        return (std::make_unique<Mapper>(args...));
+    }
+
+	AMapper(std::string rom_path, u8 *rom, u32 rom_size, u32 ram_size)
 		:	m_rom_path(rom_path),
-			m_ram(ram), m_ram_size(ram_size),
-			m_rom(rom), m_rom_size(rom_size)
-	{}
-	~AMapper() {}
+			m_rom(rom), m_rom_size(rom_size),
+			m_ram_size(ram_size)
+	{
+		m_ram = nullptr;
+		if (m_ram_size != 0)
+			m_ram = static_cast<u8*>(malloc(ram_size));
+	}
+
+	virtual ~AMapper()
+	{
+		free(m_ram);
+		free(m_rom);
+	}
 
 	virtual u8  	read_rom(u16 address) = 0;
 	virtual u8  	read_ram(u16 address) = 0;

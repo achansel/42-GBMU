@@ -1,36 +1,64 @@
-#include <AMapper.hpp>
+#include "AMapper.hpp"
 
 class MBC5 : public AMapper
 {
 public:
-    MBC5(std::string m_rom_path, u8 *rom, u32 rom_size, u8 *ram, u32 ram_size, bool battery, bool rumble)
-        :   AMapper(m_rom_path, rom, rom_size, ram, ram_size),
-            m_battery(battery), m_rumble(rumble)
+    MBC5(std::string rom_path, u8 *rom, u32 rom_size, u32 ram_size, bool battery, bool rumble)
+        :   AMapper(rom_path, rom, rom_size, ram_size),
+            m_battery(battery), m_rumble(rumble), m_ram_enabled(false), m_selected_rom_bank(1), m_selected_ram_bank(0)
     {
         if (m_battery)
-            Util::load_save(m_rom_path + ".sav", ram, ram_size);
+            Util::load_save(m_rom_path + ".sav", m_ram, ram_size);
     }
 
     ~MBC5()
     {
         if (m_battery)
-            Util::write_save(m_rom_path + ".sav", ram, ram_size);
+            Util::write_save(m_rom_path + ".sav", m_ram, m_ram_size);
     }
 
     u8  read_rom(u16 address)
     {
-        return (m_rom[address]);
+        //TODO: PREVENT IT FROM SEGFAULT BY CHANGING WRITE ROM
+        if (address <= 0x3FFF)
+            return (m_rom[address]);
+        else
+            return (m_rom[m_selected_rom_bank * 0x4000 + (address & 0x3FFF)]);
     }
 	u8  read_ram(u16 address)
     {
-        if (m_ram)
-            return (m_ram[address & 0x1FFF]);
+        //TODO: PREVENT IT FROM SEGFAULT BY CHANGING WRITE ROM
+        if (m_ram && m_ram_enabled)
+            return (m_ram[m_selected_ram_bank * 0x2000 + (address & 0x1FFF)]);
         return (0xFF);
     }
 
-	void  write_rom(u16 address, u8 value) { return ; }
-	void  write_ram(u16 address, u8 value) { if (m_ram) m_ram[address & 0x1FFF] = value; }
+	void  write_rom(u16 address, u8 value)
+    {
+        if (address <= 0x1FFF)
+        {
+            if (value == 0x0A)
+                m_ram_enabled = true;
+            else if (value == 0x00)
+                m_ram_enabled = false;
+        }
+        else if (address <= 0x2FFF)
+            m_selected_rom_bank = (m_selected_ram_bank & (1 << 8)) | value;
+        else if (address <= 0x3FFF)
+            m_selected_rom_bank = (m_selected_ram_bank & 0xFF) | ((value & 1) << 8);
+        else if (address <= 0x5FFF)
+            m_selected_ram_bank = value & 0x0F;
+    }
+	void  write_ram(u16 address, u8 value)
+    {
+        if (m_ram && m_ram_enabled)
+            m_ram[m_selected_ram_bank * 0x2000 + address & 0x1FFF] = value;
+    }
 private:
     bool    m_battery;
     bool    m_rumble;
+
+    bool    m_ram_enabled;
+    u16     m_selected_rom_bank;
+    u16     m_selected_ram_bank;
 };

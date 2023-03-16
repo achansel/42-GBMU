@@ -12,6 +12,7 @@ void CPU::fill_instructions_table()
 	i[0x10] = &CPU::STOP;
 	i[0xF3] = &CPU::DI;
 	i[0xFB] = &CPU::EI;
+	i[0x76] = &CPU::HALT;
 
 	i[0x07] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RLC, RegisterA>;
 	i[0x17] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RL, RegisterA>;

@@ -341,6 +341,9 @@ void LCD::renderscan()
     int framebuffer_offset = m_line * 160;
 
     u16 tile = m_video_ram[map_offset + line_offset];
+    std::cout << std::hex << (tile) << std::endl;
+    // bug la tilemap utilisee est tjrs a 8800h, meme quand elle doit etre 8000
+
 
 	auto s = selection.begin();
 

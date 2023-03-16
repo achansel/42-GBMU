@@ -1,10 +1,10 @@
-#include <AMapper.hpp>
+#include "AMapper.hpp"
 
 class ROMOnly : public AMapper
 {
 public:
-    ROMOnly(u8 *rom, u32 rom_size, u8 *ram, u32 ram_size)
-        : AMapper(rom, rom_size, ram, ram_size)
+    ROMOnly(std::string rom_path, u8 *rom, u32 rom_size, u32 ram_size)
+        : AMapper(rom_path, rom, rom_size, ram_size)
     {}
 
     u8  read_rom(u16 address)

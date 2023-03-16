@@ -147,9 +147,6 @@ void MMU::set_byte_at(u16 memory_location, u8 value) {
 					// joypad write
 					if (memory_location == 0xFF00)
 						m_emu->get_joypad().write_byte(value);
-					// SERIAL OUTPUT
-					if (memory_location == 0xFF01)
-						std::cout << (char) value;
 					// interrupt enable
 					if (memory_location == 0xFFFF)
 						m_emu->get_CPU().write_ie(value);

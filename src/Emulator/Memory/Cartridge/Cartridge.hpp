@@ -10,7 +10,9 @@
 #include <cstdlib>
 
 #include <Emulator/Util/Types.hpp>
-//#include <Emulator/IMapper.hpp>
+#include <Emulator/Memory/Cartridge/Mapper/AMapper.hpp>
+#include <Emulator/Memory/Cartridge/Mapper/ROMOnly.hpp>
+#include <Emulator/Memory/Cartridge/Mapper/MBC5.hpp>
 
 enum class CartridgeType {
 	ROM_ONLY						= 0x00,
@@ -48,19 +50,19 @@ public:
     explicit Cartridge(const std::string& path_to_game);
     ~Cartridge();
     
-    int get_cart_type();
-
     u8		read_byte(u16 memory_loc);
     u8		read_byte_at_ext_ram(u16 memory_loc);
 
     void 	write_byte(u16 memory_loc, u8 value);
     void	write_byte_at_ext_ram(u16 memory_loc, u8 value);
 
+	/*
 	u8		raw_get_rom(u32 address);
 	u8		raw_get_ram(u32 address);
 
 	void	raw_write_rom(u32 address, u8 byte);
 	void	raw_write_ram(u32 address, u8 byte);
+	*/
 
 	static bool is_supported_mbc(CartridgeType t);
 private:
@@ -68,15 +70,10 @@ private:
 	std::string 	m_manufacturer_code;
 
 	u8				m_cgb_flag;
-	CartridgeType	m_cartridge_type;
 	u8				m_destination_code;
 	u8				m_mask_rom_version_number;
 
-	u8*	m_ram;
-	//u32 m_ram_size;
-	
-	u8* m_rom;
-    u32 m_rom_size;
+	std::unique_ptr<AMapper>	m_mapper;
 };
 
 
