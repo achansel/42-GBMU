@@ -18,6 +18,6 @@ public:
         return (0xFF);
     }
 
-	void  write_rom(u16 address, u8 value) { return ; }
+	void  write_rom(u16, u8) { return ; }
 	void  write_ram(u16 address, u8 value) { if (m_ram) m_ram[address & 0x1FFF] = value; }
 };

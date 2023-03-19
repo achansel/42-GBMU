@@ -52,7 +52,7 @@ public:
 	void  write_ram(u16 address, u8 value)
     {
         if (m_ram && m_ram_enabled)
-            m_ram[m_selected_ram_bank * 0x2000 + address & 0x1FFF] = value;
+            m_ram[m_selected_ram_bank * 0x2000 + (address & 0x1FFF)] = value;
     }
 private:
     bool    m_battery;

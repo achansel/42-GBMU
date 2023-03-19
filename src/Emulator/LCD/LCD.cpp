@@ -341,9 +341,8 @@ void LCD::renderscan()
     int framebuffer_offset = m_line * 160;
 
     u16 tile = m_video_ram[map_offset + line_offset];
-    std::cout << std::hex << (tile) << std::endl;
-    // bug la tilemap utilisee est tjrs a 8800h, meme quand elle doit etre 8000
-
+    if (!m_bgwintile)
+		tile = static_cast<u16>(256 + static_cast<s8>(tile));
 
 	auto s = selection.begin();
 
@@ -353,7 +352,7 @@ void LCD::renderscan()
         m_framebuffer[framebuffer_offset] = m_pal[m_tileset[tile][y][x]];
 
 		// Sprite appears here
-		// TODO: FLIPPING OF SPRITES & HANDLE BG AND WINDOW OVER OBJ FLAG
+		// TODO: FLIPPING OF SPRITES
 		// TODO: MAYBE IMPROVE ALGO BY KEEPING AN X IN MEMORY ?
 		// TODO: Add uniqueness on x on the sprites, otherwise this will bug on two sprites in the same x coord, by never skipping the 2nd one
 		if (!selection.empty() && s != selection.end() && s->get().x - 8 <= (int)(i) && s->get().x > (int)(i))
@@ -361,6 +360,12 @@ void LCD::renderscan()
 			// Get tile and x and y coordinate inside of tile
 			u8	tile_x		= i			- (s->get().x - 8);
 			u8	tile_y		= m_line	- (s->get().y - 16);
+
+			// Flipping (probably doesnt work)
+			if (s->get().x_flip)
+				tile_x = 7 - tile_x;
+			if (s->get().y_flip)
+				tile_y = (m_spritesz ? 15 : 7) - tile_y;
 			u16 sprite_tile	= s->get().tile_index;
 
 			// 2 tiles tall sprites
@@ -372,7 +377,7 @@ void LCD::renderscan()
 
 			// Check if we have a visible pixel
 			u8 col = m_tileset[sprite_tile][tile_y][tile_x];
-			if (col)
+			if (col && (!s->get().background || (s->get().background && m_tileset[tile][y][x] == 00)))
 			{
 				// Get color mapped through palette and show it
 				if (s->get().palette)
@@ -395,6 +400,8 @@ void LCD::renderscan()
             x = 0;
             line_offset = (line_offset + 1) & 31;
             tile = m_video_ram[map_offset + line_offset];
+		    if (!m_bgwintile)
+				tile = static_cast<u16>(256 + static_cast<s8>(tile));
         }
     }
 }
