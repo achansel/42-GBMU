@@ -82,8 +82,8 @@ private:
 	// https://lospec.com/palette-list
 	// good pals
     u32 m_pal[4];
-	u32 m_obj_pal0[3];
-	u32 m_obj_pal1[3];
+	u32 m_obj_pal0[4];
+	u32 m_obj_pal1[4];
 
     u8 m_tileset[384][8][8];
 };

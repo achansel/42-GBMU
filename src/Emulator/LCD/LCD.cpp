@@ -46,8 +46,8 @@ void LCD::update(u8 t)
                 if (m_modeclock >= 172) {
                     m_mode = Mode::HBLANK;
                     m_modeclock = 0;
-                    renderscan();
-                    request_interrupts();
+					renderscan();
+					request_interrupts();
                 }
                 break;
             case Mode::HBLANK:
@@ -295,6 +295,7 @@ void LCD::updatetile(u16 addr) {
     int	tile    = (addr >> 4) & 0x1FF;
     int		y   = (addr >> 1) & 7;
 
+
     for (int x = 0; x < 8; x++)
     {
         unsigned char bitmask = 1 << (7 - x);
@@ -310,21 +311,24 @@ void LCD::renderscan()
 
 	// Select sprites
 	std::vector<std::reference_wrapper<Sprite>> selection;
-	selection.reserve(10);
-	for (Sprite &s : m_sprites)
+	if (m_spriteon)
 	{
-		if (m_line < s.y && m_line >= s.y - 16)
+		selection.reserve(10);
+		for (Sprite &s : m_sprites)
 		{
-			if (m_spritesz || (m_line < s.y - 8))  // sprite displayed on current y
+			if (m_line < s.y && m_line >= s.y - 16)
 			{
-				selection.push_back(s);
-				if (selection.size() == 10)
-					break ;
+				if (m_spritesz || (m_line < s.y - 8))  // sprite displayed on current y
+				{
+					selection.push_back(s);
+					if (selection.size() == 10)
+						break ;
+				}
 			}
 		}
+		/* TODO: FIX: Doesnt keep order of apparition from OAM in case two sprites have the same x */
+		std::sort(selection.begin(), selection.end(), [](std::reference_wrapper<Sprite> &a, std::reference_wrapper<Sprite> &b) { return (a.get().x < b.get().x); });
 	}
-	/* TODO: FIX: Doesnt keep order of apparition from OAM in case two sprites have the same x */
-	std::sort(selection.begin(), selection.end(), [](std::reference_wrapper<Sprite> &a, std::reference_wrapper<Sprite> &b) { return (a.get().x < b.get().x); });
 
 
     // select right background map
@@ -342,7 +346,7 @@ void LCD::renderscan()
 
     u16 tile = m_video_ram[map_offset + line_offset];
     if (!m_bgwintile)
-		tile = static_cast<u16>(256 + static_cast<s8>(tile));
+		tile = static_cast<u16>(256 + static_cast<s8>(tile & 0xFF));
 
 	auto s = selection.begin();
 
@@ -355,7 +359,7 @@ void LCD::renderscan()
 		// TODO: FLIPPING OF SPRITES
 		// TODO: MAYBE IMPROVE ALGO BY KEEPING AN X IN MEMORY ?
 		// TODO: Add uniqueness on x on the sprites, otherwise this will bug on two sprites in the same x coord, by never skipping the 2nd one
-		if (!selection.empty() && s != selection.end() && s->get().x - 8 <= (int)(i) && s->get().x > (int)(i))
+		if (!selection.empty() && s != selection.end() && s->get().x - 8 <= (int)(i) && s->get().x >= (int)(i))
 		{
 			// Get tile and x and y coordinate inside of tile
 			u8	tile_x		= i			- (s->get().x - 8);
@@ -376,14 +380,13 @@ void LCD::renderscan()
 			}
 
 			// Check if we have a visible pixel
-			u8 col = m_tileset[sprite_tile][tile_y][tile_x];
-			if (col && (!s->get().background || (s->get().background && m_tileset[tile][y][x] == 00)))
+			if (col && (!s->get().background || (s->get().background && !m_tileset[tile][y][x])))
 			{
 				// Get color mapped through palette and show it
 				if (s->get().palette)
-					m_framebuffer[framebuffer_offset] = m_obj_pal1[m_tileset[sprite_tile][tile_y][tile_x]];
+					m_framebuffer[framebuffer_offset] = m_obj_pal1[col];
 				else
-					m_framebuffer[framebuffer_offset] = m_obj_pal0[m_tileset[sprite_tile][tile_y][tile_x]];
+					m_framebuffer[framebuffer_offset] = m_obj_pal0[col];
 			}
 
 			// Go to next sprite if this x marks the end of it
