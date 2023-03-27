@@ -29,6 +29,8 @@ public:
 		free(m_rom);
 	}
 
+	virtual void	debug() {};
+
 	virtual u8  	read_rom(u16 address) = 0;
 	virtual u8  	read_ram(u16 address) = 0;
 

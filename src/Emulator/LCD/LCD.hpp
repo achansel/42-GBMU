@@ -81,6 +81,9 @@ private:
 
 	// https://lospec.com/palette-list
 	// good pals
+	//TODO: IMRPOVE PALETTE HANDLING
+	u8 m_raw_pal[3];
+
     u32 m_pal[4];
 	u32 m_obj_pal0[4];
 	u32 m_obj_pal1[4];

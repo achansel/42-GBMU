@@ -54,6 +54,10 @@ Cartridge::~Cartridge()
 {
 }
 
+void Cartridge::debug() {
+	m_mapper->debug();
+}
+
 u8 Cartridge::read_byte(u16 memory_loc) {
     //std::cout << "Cartridge::read_byte -> U16: " << std::hex << memory_loc << std::endl;
     return m_mapper->read_rom(memory_loc);

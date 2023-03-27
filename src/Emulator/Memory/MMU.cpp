@@ -66,7 +66,11 @@ u8 MMU::get_byte_at(u16 memory_location)
 					else if (memory_location == 0xFF00)
 						return m_emu->get_joypad().read_byte();
 					else if (memory_location >= 0xFF04 && memory_location <= 0xFF07)
+					{
+						//if (memory_location == 0xFF04)
+							//std::cout << "DIV REGISTER READ" << std::endl;
 						return m_emu->get_timer().read_byte(memory_location);
+					}
                     // IO REGS
                     else
                     {

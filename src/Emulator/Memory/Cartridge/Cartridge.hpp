@@ -50,6 +50,7 @@ public:
     explicit Cartridge(const std::string& path_to_game);
     ~Cartridge();
     
+	void 	debug();
     u8		read_byte(u16 memory_loc);
     u8		read_byte_at_ext_ram(u16 memory_loc);
 

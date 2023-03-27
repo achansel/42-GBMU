@@ -118,6 +118,10 @@ u8 LCD::read_byte(u16 memory_loc) {
 				return m_lyc;
 			case 0xFF46:
 				return m_dma;
+			case 0xFF47:
+			case 0xFF48:
+			case 0xFF49:
+				return (m_raw_pal[memory_loc - 0xFF47]);
 			case 0xFF4A:
 				return m_wy;
 			case 0xFF4B:
@@ -185,6 +189,7 @@ void LCD::write_byte(u16 memory_loc, u8 value) {
 				init_dma_transfer();
 				break ;
             case 0xFF47:
+				m_raw_pal[0] = value;
                 for (int i = 0; i < 4; i++)
                 {
                     switch ((value >> (i * 2)) & 3)
@@ -205,7 +210,9 @@ void LCD::write_byte(u16 memory_loc, u8 value) {
                 }
 				break;
 			case 0xFF48:
-                for (int i = 1; i < 4; i++)
+				std::cout << "OBP0 WRITE " << std::hex << +value << std::endl;
+				m_raw_pal[1] = value;
+                for (int i = 0; i < 4; i++)
                 {
                     switch ((value >> (i * 2)) & 3)
                     {
@@ -225,7 +232,9 @@ void LCD::write_byte(u16 memory_loc, u8 value) {
                 }
 				break;
 			case 0xFF49:
-			    for (int i = 1; i < 4; i++)
+				std::cout << "OBP1 WRITE " << std::hex << +value << std::endl;
+				m_raw_pal[2] = value;
+			    for (int i = 0; i < 4; i++)
                 {
                     switch ((value >> (i * 2)) & 3)
                     {
@@ -359,7 +368,7 @@ void LCD::renderscan()
 		// TODO: FLIPPING OF SPRITES
 		// TODO: MAYBE IMPROVE ALGO BY KEEPING AN X IN MEMORY ?
 		// TODO: Add uniqueness on x on the sprites, otherwise this will bug on two sprites in the same x coord, by never skipping the 2nd one
-		if (!selection.empty() && s != selection.end() && s->get().x - 8 <= (int)(i) && s->get().x >= (int)(i))
+		if (!selection.empty() && s != selection.end() && s->get().x - 8 <= (int)(i) && s->get().x > (int)(i))
 		{
 			// Get tile and x and y coordinate inside of tile
 			u8	tile_x		= i			- (s->get().x - 8);
@@ -380,6 +389,7 @@ void LCD::renderscan()
 			}
 
 			// Check if we have a visible pixel
+			u8 col = m_tileset[sprite_tile][tile_y][tile_x];
 			if (col && (!s->get().background || (s->get().background && !m_tileset[tile][y][x])))
 			{
 				// Get color mapped through palette and show it

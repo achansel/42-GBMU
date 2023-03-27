@@ -17,6 +17,11 @@ public:
             Util::write_save(m_rom_path + ".sav", m_ram, m_ram_size);
     }
 
+	void debug()
+	{
+		std::cout << "CARTRIDGE: MBC5 (ROM BANK/RAM BANK): " << std::hex << m_selected_rom_bank << "/" << m_selected_ram_bank << std::endl;
+	}
+
     u8  read_rom(u16 address)
     {
         //TODO: PREVENT IT FROM SEGFAULT BY CHANGING WRITE ROM
