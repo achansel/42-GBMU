@@ -4,7 +4,10 @@
 #include <algorithm>
 
 LCD::LCD(Emulator *emu)
-	: m_emu(emu)
+	: m_emu(emu),
+	m_windowon(false),
+	m_window_line(0),
+	m_should_display_window(false)
 {
 }
 
@@ -62,6 +65,8 @@ void LCD::update(u8 t)
                     else {
                         m_mode = Mode::LINE_SPRITES;
                         request_interrupts();
+						if (m_windowon && m_wy == m_line)
+							m_should_display_window = true;
                     }
 
                 }
@@ -71,9 +76,11 @@ void LCD::update(u8 t)
                     m_modeclock = 0;
                     m_line++;
                     if (m_line > 153) {
+						m_window_line = 0;
                         m_line = 0;
                         m_mode = Mode::LINE_SPRITES;
                         request_interrupts();
+						m_should_display_window = m_windowon && (m_wy == m_line);
                     }
                 }
                 break;
@@ -104,7 +111,7 @@ u8 LCD::read_byte(u16 memory_loc) {
 					   (m_windowmap	? 0x40 : 0x00) |
                        (m_lcdon		? 0x80 : 0x00);
 			case 0xFF41:
-				d = 	((m_mode)		   			<< 0) |
+				d = 	((m_mode)		   		<< 0) |
 						((m_lyc == m_line) 		<< 2) |
 						((m_stat_int_sources) 	<< 3);
 				return (d);
@@ -210,7 +217,6 @@ void LCD::write_byte(u16 memory_loc, u8 value) {
                 }
 				break;
 			case 0xFF48:
-				std::cout << "OBP0 WRITE " << std::hex << +value << std::endl;
 				m_raw_pal[1] = value;
                 for (int i = 0; i < 4; i++)
                 {
@@ -232,7 +238,6 @@ void LCD::write_byte(u16 memory_loc, u8 value) {
                 }
 				break;
 			case 0xFF49:
-				std::cout << "OBP1 WRITE " << std::hex << +value << std::endl;
 				m_raw_pal[2] = value;
 			    for (int i = 0; i < 4; i++)
                 {
@@ -315,9 +320,9 @@ void LCD::updatetile(u16 addr) {
 
 void LCD::renderscan()
 {
-	// TODO: FIX WHEN LCDC.4 is 0, I think it will not work by default
-	// TODO: DRAW WINDOW
+	//std::cout << "GBMU: DEBUG: " << "window_on " << m_windowon << ", wx: " << std::hex << +m_wx << ", wy: " << +m_wy <<std::endl;
 
+	// TODO: REFACTOR AND FIX SPRITES
 	// Select sprites
 	std::vector<std::reference_wrapper<Sprite>> selection;
 	if (m_spriteon)
@@ -341,15 +346,24 @@ void LCD::renderscan()
 
 
     // select right background map
-    int map_offset = m_bgmap ? 0x1C00 : 0x1800;
+    int map_offset		= m_bgmap ? 0x1C00 : 0x1800;
 
     // >> 3 -> divide by 8 to select right tile,
     // << 5 -> multiply by 32 to skip n tiles instead of n bytes
     map_offset += (((m_line + m_scy) & 255) >> 3) << 5;
+	if (m_should_display_window && m_wx == 0 + 7)
+		map_offset = (m_windowmap ? 0x1C00 : 0x1800) + ((m_window_line >> 3) << 5);
 
     int line_offset = m_scx >> 3;
     u8            y = (m_line + m_scy) & 7;
     u8            x = m_scx & 7;
+
+	if (m_should_display_window && m_wx == 0 + 7)
+	{
+		line_offset = 0;
+		y = m_window_line & 7;
+		x = 0;
+	}
 
     int framebuffer_offset = m_line * 160;
 
@@ -374,12 +388,12 @@ void LCD::renderscan()
 			u8	tile_x		= i			- (s->get().x - 8);
 			u8	tile_y		= m_line	- (s->get().y - 16);
 
-			// Flipping (probably doesnt work)
+			// Flipping (probably doesnt work on y)
 			if (s->get().x_flip)
 				tile_x = 7 - tile_x;
 			if (s->get().y_flip)
 				tile_y = (m_spritesz ? 15 : 7) - tile_y;
-			u16 sprite_tile	= s->get().tile_index;
+			u8 sprite_tile = s->get().tile_index;
 
 			// 2 tiles tall sprites
 			if (m_spritesz)
@@ -413,9 +427,13 @@ void LCD::renderscan()
             x = 0;
             line_offset = (line_offset + 1) & 31;
             tile = m_video_ram[map_offset + line_offset];
+			//TODO: WINDOW ENABLING MID FRAME with m_wx != 7
+
 		    if (!m_bgwintile)
-				tile = static_cast<u16>(256 + static_cast<s8>(tile));
+				tile = static_cast<u16>(256 + static_cast<s8>(tile & 0xFF));
         }
     }
+	if (m_should_display_window)
+		m_window_line++;
 }
 

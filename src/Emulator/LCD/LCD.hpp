@@ -69,6 +69,8 @@ private:
 	bool m_windowon, m_windowmap;
 
 	u8 m_wx, m_wy;
+	u8 m_window_line;
+	bool m_should_display_window;
 
 	u8 m_lyc;
 	u8 m_stat_int_sources;
