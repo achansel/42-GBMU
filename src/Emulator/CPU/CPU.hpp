@@ -25,7 +25,7 @@ public:
 	};
 
     explicit CPU(Emulator *emu);
-	~CPU() {std::cout << "~CPU() was called\nPC: " << std::hex << PC << std::endl; debug_stop(); }
+	~CPU() {}
 
     void tick();
 

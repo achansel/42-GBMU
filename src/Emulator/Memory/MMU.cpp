@@ -44,53 +44,35 @@ u8 MMU::get_byte_at(u16 memory_location)
 
         // Working Ram Shadow, OAM, I/O, Zero Page Ram
         case 0xF000:
-            switch (memory_location & 0x0F00)
-            {
-                // OAM
-                case 0xE00:
-                        // Actually a quick impl here, if one tries to read above the OAM, (0xFEA0 to 0xFF00),
-                        // it returns junk aka a byte from OAM, this shouldn't be a problem cause this
-                        // memory is normally not mapped, and also returns junk on a physical console
-                        return m_emu->get_lcd().read_byte_at_oam(memory_location & 0x9F);
-                case 0xF00:
-					if (memory_location == 0xFFFF)
-						return m_emu->get_CPU().read_ie();
-					// interrupt flags
-					if (memory_location == 0xFF0F)
-						return m_emu->get_CPU().read_if();
-                    // ZERO PAGE RAM
-                    if (memory_location >= 0xFF80)
-                    {
-                        return m_zero_page_ram[memory_location & 0x7F];
-                    }
-					else if (memory_location == 0xFF00)
-						return m_emu->get_joypad().read_byte();
-					else if (memory_location >= 0xFF04 && memory_location <= 0xFF07)
-					{
-						//if (memory_location == 0xFF04)
-							//std::cout << "DIV REGISTER READ" << std::endl;
-						return m_emu->get_timer().read_byte(memory_location);
-					}
-                    // IO REGS
-                    else
-                    {
-                        switch (memory_location & 0x00F0)
-                        {
-                            // LCD QUICK DONE LOL
-                            case 0x40:
-                                return m_emu->get_lcd().read_byte(memory_location);
-                            default:
-                                return 0x0; 
-                        }
-                    }
-                default:
-                    return 0x0;
-            }
+			/* OAM is actually not that wide, but since the region above is normally ummapped, we can return anything and its fine */
+			if (memory_location < 0xFF00)
+                return m_emu->get_lcd().read_byte_at_oam(memory_location & 0x9F);
 
-        // We didn't match any case
-        default:
-            return 0x0;
-    }        
+			else if (memory_location < 0xFF80)
+            {
+				if (memory_location == 0xFF00)
+					return m_emu->get_joypad().read_byte();
+				else if (memory_location >= 0xFF04 && memory_location <= 0xFF07)
+					return m_emu->get_timer().read_byte(memory_location);
+				else if (memory_location == 0xFF0F)
+					return m_emu->get_CPU().read_if();
+                else if (memory_location >= 0xFF40 && memory_location < 0xFF50)
+                    return m_emu->get_lcd().read_byte(memory_location);
+                else if (!(memory_location >= 0xFF10 && memory_location < 0xFF40))
+				{
+					std::cout << "GBMU: MMU: READ TO UNKNOWN/UNIMPLMENTED IO REGISTER " << std::hex << memory_location << std::endl;
+					return (0);
+				}
+	        }
+
+			else if (memory_location < 0xFFFF)
+               return m_hram[memory_location & 0x7F];
+
+			else if (memory_location == 0xFFFF)
+				return m_emu->get_CPU().read_ie();
+
+    }
+	return (0);
 }
 
 s8 MMU::get_signed_byte_at(u16 memory_location) {
@@ -138,52 +120,30 @@ void MMU::set_byte_at(u16 memory_location, u8 value) {
 
         // Working Ram Shadow, OAM, I/O, Zero Page Ram
         case 0xF000:
-            switch (memory_location & 0x0F00)
+			/* OAM is actually not that wide, but since the region above is normally ummapped, we can return anything and its fine */
+			if (memory_location < 0xFF00)
+                m_emu->get_lcd().write_byte_at_oam(memory_location & 0x9F, value);
+			else if (memory_location < 0xFF80)
             {
-                // OAM
-                case 0xE00:
-                        // Actually a quick impl here, if one tries to read above the OAM, (0xFEA0 to 0xFF00),
-                        // it returns junk aka a byte from OAM, this shouldn't be a problem cause this
-                        // memory is normally not mapped, and also returns junk on a physical console
-                        m_emu->get_lcd().write_byte_at_oam(memory_location & 0x9F, value);
-                        break;
-                case 0xF00:
-					// joypad write
-					if (memory_location == 0xFF00)
-						m_emu->get_joypad().write_byte(value);
-					// interrupt enable
-					if (memory_location == 0xFFFF)
-						m_emu->get_CPU().write_ie(value);
-					// interrupt flags
-					if (memory_location == 0xFF0F)
-						m_emu->get_CPU().write_if(value);
-					// UNMAP BIOS
-					if (memory_location == 0xFF50 && m_bios_mapped)
-					{
-						m_bios_mapped = !value;
-					}
-                    // ZERO PAGE RAM
-                    else if (memory_location >= 0xFF80)
-                    {
-                        m_zero_page_ram[memory_location & 0x7F] = value;
-                    }
-					else if (memory_location >= 0xFF04 && memory_location <= 0xFF07)
-						m_emu->get_timer().write_byte(memory_location, value);
-                    // IO REGS
-                    else
-                    {
-                        switch (memory_location & 0x00F0)
-                        {
-                            // LCD QUICK DONE LOL
-                            case 0x40:
-                                m_emu->get_lcd().write_byte(memory_location, value);
-                                break;
-                        }
-                    }
-                    break;
-                default:
-                    break;
-            }
+				if (memory_location == 0xFF00)
+					m_emu->get_joypad().write_byte(value);
+				else if (memory_location >= 0xFF04 && memory_location <= 0xFF07)
+					m_emu->get_timer().write_byte(memory_location, value);
+				else if (memory_location == 0xFF0F)
+					m_emu->get_CPU().write_if(value);
+                else if (memory_location >= 0xFF40 && memory_location < 0xFF50)
+                    m_emu->get_lcd().write_byte(memory_location, value);
+				else if (memory_location == 0xFF50 && m_bios_mapped)
+					m_bios_mapped = !value;
+                else if (!(memory_location >= 0xFF10 && memory_location < 0xFF40))
+					std::cout << "GBMU: MMU: WRITE TO UNKNOWN/UNIMPLMENTED IO REGISTER " << std::hex << memory_location << ", VALUE: " << +value << std::endl;
+	        }
+
+			else if (memory_location < 0xFFFF)
+            	m_hram[memory_location & 0x7F] = value;
+
+			else if (memory_location == 0xFFFF)
+				m_emu->get_CPU().write_ie(value);
 
         // We didn't match any case bruv
         default:

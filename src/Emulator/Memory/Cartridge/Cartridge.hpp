@@ -5,7 +5,6 @@
 #include <fstream>
 #include <vector>
 #include <memory>
-#include <cstdlib>
 
 #include <Emulator/Util/Types.hpp>
 #include <Emulator/Memory/Cartridge/Mapper/AMapper.hpp>

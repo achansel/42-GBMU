@@ -12,9 +12,9 @@ endmacro()
 
 # Set default options/values
 cmake_minimum_required(VERSION 3.13)
-project(EGBoy VERSION 1.0.0 LANGUAGES CXX)
-add_executable(EGBoy)
-target_compile_features(EGBoy PRIVATE cxx_std_20)
+project(GBMU VERSION 1.0.0 LANGUAGES CXX)
+add_executable(GBMU)
+target_compile_features(GBMU PRIVATE cxx_std_20)
 #set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 #set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
@@ -35,12 +35,12 @@ endif()
 
 # Define compile flags according to the build type
 if (CMAKE_BUILD_TYPE STREQUAL Release)
-  target_compile_options(EGBoy PRIVATE -Wall -O3 -s)
+  target_compile_options(GBMU PRIVATE -Wall -O3 -s)
 else()
   # When compiling as debug
-  target_compile_options(EGBoy PRIVATE -Wall -Wextra -Werror -g -fsanitize=address -fsanitize=bounds-strict)
-  target_link_options(EGBoy PRIVATE -g -fsanitize=address -fsanitize=bounds-strict)
-  target_compile_definitions(EGBoy PRIVATE -DDBG)
+  target_compile_options(GBMU PRIVATE -Wall -Wextra -Werror -g -fsanitize=address -fsanitize=bounds-strict)
+  target_link_options(GBMU PRIVATE -g -fsanitize=address -fsanitize=bounds-strict)
+  target_compile_definitions(GBMU PRIVATE -DDBG)
 endif()
 
 
@@ -50,8 +50,8 @@ if (GDBSTUB_INCLUDED)
 endif()
 
 # Add source files and include dirs
-target_include_directories(EGBoy PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_sources(EGBoy PRIVATE 
+target_include_directories(GBMU PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_sources(GBMU PRIVATE 
             ${SOURCE_FOLDER}/main.cpp
             ${SOURCE_FOLDER}/Emulator/Emulator.cpp
             ${SOURCE_FOLDER}/Emulator/CPU/CPU.cpp
@@ -70,7 +70,7 @@ find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
 # Link against SDL
-target_link_libraries(EGBoy ${SDL2_LIBRARIES})
+target_link_libraries(GBMU ${SDL2_LIBRARIES})
 
 # Copy res dir
 file(TO_CMAKE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/res" LOC_PATH)
