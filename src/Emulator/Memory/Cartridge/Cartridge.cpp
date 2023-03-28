@@ -83,6 +83,6 @@ void Cartridge::write_byte_at_ext_ram(u16 memory_loc, u8 value)
 bool Cartridge::is_supported_mbc(CartridgeType type)
 {
 	return (type == CartridgeType::ROM_ONLY
-		||	type == CartridgeType::MBC5_RAM_BATTERY // pk blue
-		||	type == CartridgeType::MBC1);			// blarggs cpu test roms
+		||	type == CartridgeType::MBC5_RAM_BATTERY 	// pk blue
+		||	type == CartridgeType::MBC1);				// blarggs cpu test roms
 }

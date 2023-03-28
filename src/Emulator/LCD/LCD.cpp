@@ -20,13 +20,15 @@ void LCD::perform_dma(u8 t)
         write_byte_at_oam(m_dma_offset++, m_emu->get_MMU().get_byte_at(src + c));
 }
 
+// TODO: Fix interrupts and maybe timings so that TLOZ Links Awakening works
 void LCD::request_interrupts()
 {
     if (m_mode == Mode::VBLANK)
 		m_emu->get_CPU().request_interrupt(CPU::Interrupt::VBLANK);
-	if (m_stat_int_sources & 0x80 && m_line == m_lyc)
+	if ((m_stat_int_sources & 0x8) && m_line == m_lyc)
 		m_emu->get_CPU().request_interrupt(CPU::Interrupt::STAT);
-	else if (m_mode != LINE_BACKGROUND && (static_cast<u8>(1 << (3 + m_mode)) & m_stat_int_sources))
+	if (m_mode != LINE_BACKGROUND
+		&& (static_cast<u8>(1 << m_mode) & m_stat_int_sources))
 		m_emu->get_CPU().request_interrupt(CPU::Interrupt::STAT);
 }
 
