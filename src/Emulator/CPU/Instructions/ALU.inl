@@ -15,23 +15,29 @@ void ADD_REG16_REG16()
 {
 	m_tclock += 4;
 
-	u32 res = GET_COMPOSED_REG(dst) + GET_COMPOSED_REG(src);
+	u16 r0 = GET_COMPOSED_REG(dst);
+	u16 r1 = GET_COMPOSED_REG(src);
+
 	SET_FLAG(SubstractFlag, 0);
-	SET_FLAG(HalfCarryFlag, (res >> 12) & 1);
-	SET_FLAG(CarryFlag, (res >> 16) & 1);
-	SET_COMPOSED_REG(dst, static_cast<u16>(res));
+	SET_FLAG(HalfCarryFlag,	((r0 & 0xFFF) + (r1 & 0xFFF)) > 0xFFF);
+	SET_FLAG(CarryFlag,		(r0 + r1) >> 16);
+
+	SET_COMPOSED_REG(dst, static_cast<u16>(r0 + r1));
 }
 
 void ADD_SP_IMM8()
 {
 	m_tclock += 8;
-	
-	u32 n = GET_COMPOSED_REG(RegisterSP) + static_cast<s8>(FETCH_BYTE());
-	SET_COMPOSED_REG(RegisterSP, static_cast<u16>(n));
-	SET_FLAG(ZeroFlag, 0);
+
+	s8 byte = FETCH_BYTE();
+	u16 sp = GET_COMPOSED_REG(RegisterSP);
+
+	SET_FLAG(ZeroFlag,		0);
 	SET_FLAG(SubstractFlag, 0);
-    SET_FLAG(HalfCarryFlag, !!(n & 0x10));
-    SET_FLAG(CarryFlag,		!!(n & 0x100));
+	SET_FLAG(HalfCarryFlag, ((byte & 0xF)  + (sp & 0xF))  > 0xF);
+	SET_FLAG(CarryFlag,		((byte & 0xFF) + (sp & 0xFF)) > 0xFF);
+
+	SET_COMPOSED_REG(RegisterSP, static_cast<u16>(sp + byte));
 }
 
 enum class ALUOP {

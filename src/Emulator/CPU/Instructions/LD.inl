@@ -59,13 +59,15 @@ void LD_HL_SP_X_IMM8()
 {
 	m_tclock += 4;
 
-	u32 n = GET_COMPOSED_REG(RegisterSP) + static_cast<s8>(FETCH_BYTE());
+	s8 byte = FETCH_BYTE();
+	u16 sp = GET_COMPOSED_REG(RegisterSP);
+
 	SET_FLAG(ZeroFlag, 0);
 	SET_FLAG(SubstractFlag, 0);
-	SET_FLAG(HalfCarryFlag, !!(n & 0x10));
-	SET_FLAG(CarryFlag,		!!(n & 0x100));
+	SET_FLAG(HalfCarryFlag, ((byte & 0xF)  + (sp & 0xF))  > 0xF);
+	SET_FLAG(CarryFlag,		((byte & 0xFF) + (sp & 0xFF)) > 0xFF);
 
-	MOV_REG_16(RegisterHL, static_cast<u16>(n));
+	MOV_REG_16(RegisterHL, static_cast<u16>(byte + sp));
 }
 void LD_SP_HL()			{ MOV_REG16_REG16(RegisterSP, RegisterHL); m_tclock += 4; }	
 
