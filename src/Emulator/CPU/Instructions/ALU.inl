@@ -110,8 +110,8 @@ void DEC_REG()  							{ DEC_REG(reg); SET_FLAG(ZeroFlag, GET_REG(reg) == 0); SE
 template<Register reg>
 void INC_REG() 								{ INC_REG(reg); SET_FLAG(ZeroFlag, GET_REG(reg) == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, (GET_REG(reg) & 0xF) == 0x00); }
 
-void DEC_ADDR_HL()							{ u16 address = GET_COMPOSED_REG(RegisterHL); u8 b = GET_BYTE(address) - 1; SET_FLAG(ZeroFlag, b == 0); SET_FLAG(SubstractFlag, 1); SET_FLAG(HalfCarryFlag, (b >> 4) & 1); WRITE_BYTE(address, b); }
-void INC_ADDR_HL()							{ u16 address = GET_COMPOSED_REG(RegisterHL); u8 b = GET_BYTE(address) + 1; SET_FLAG(ZeroFlag, b == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, (b >> 4) & 1); WRITE_BYTE(address, b); }
+void DEC_ADDR_HL()							{ u16 address = GET_COMPOSED_REG(RegisterHL); u8 b = GET_BYTE(address) - 1; SET_FLAG(ZeroFlag, b == 0); SET_FLAG(SubstractFlag, 1); SET_FLAG(HalfCarryFlag, (b & 0xF) == 0xF);  WRITE_BYTE(address, b); }
+void INC_ADDR_HL()							{ u16 address = GET_COMPOSED_REG(RegisterHL); u8 b = GET_BYTE(address) + 1; SET_FLAG(ZeroFlag, b == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, (b & 0xF) == 0x00); WRITE_BYTE(address, b); }
 
 // DAA: Decimal Adjust A, the way the GB handles BCD (Binary-Coded Decimal) arithmetic
 void DAA()
