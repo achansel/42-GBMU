@@ -10,7 +10,7 @@ SDL_Renderer    *m_renderer;
 SDL_Window      *m_window;
 SDL_Texture     *m_framebuffer;
 
-int init_window()
+int init_window(const std::string &rom)
 {
     int rendererFlags;
 	rendererFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
@@ -21,7 +21,8 @@ int init_window()
 		exit(1);
 	}
 
-	m_window = SDL_CreateWindow("GBMU", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 160 * 3, 144 * 3, 0);
+	std::string m_title = "GBMU " + rom;
+	m_window = SDL_CreateWindow(m_title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 160 * 3, 144 * 3, 0);
 	if (!m_window)
 	{
 		printf("Failed to open %d x %d window: %s\n", 160*3, 144*3, SDL_GetError());
@@ -44,35 +45,49 @@ int init_window()
     return (0);
 }
 
+bool handle_events(Emulator &emu)
+{
+	SDL_Event e;
+	while (SDL_PollEvent(&e))
+	{
+		if (e.type == SDL_QUIT)
+		{
+			emu.get_CPU().m_exit = true;
+			return (false);
+		}
+		if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) emu.get_joypad().update(e);
+	}
+	return (true);
+}
+
 int main(int argc, char** argv)
 {
-    if (argc == 1)
+    if (argc != 2)
     {
-        std::cerr << "Please specify a rom file as an argument" << std::endl;
+        std::cerr << "GBMU: PLEASE SPECIFY ONE ROM FILE" << std::endl;
 	    return 1;
-    } 
+    }
+
     Emulator emu(argv[1]);
     std::thread emu_thread(&Emulator::run, &emu);
 
-    init_window();
-
-    while (1)
+    init_window(argv[1]);
+    while (!emu.get_CPU().m_exit)
     {
-        SDL_Event e;
-        while (SDL_PollEvent(&e))
-        {
-            if (e.type == SDL_QUIT)
-            {
-                emu.get_CPU().m_exit = true;
-                goto out ;
-            }
-            if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) emu.get_joypad().update(e);
-        }
+		/* Get inputs */
+		SDL_Event e;
+		while (SDL_PollEvent(&e))
+		{
+			if (e.type == SDL_QUIT)
+				emu.get_CPU().m_exit = true;
+			if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) emu.get_joypad().update(e);
+		}
+
+		/* Draw if needed */
         if (emu.get_lcd().need_to_draw)
         {
             emu.get_lcd().need_to_draw = false;
 
-            // TODO: Investigate: Maybe protect from reading a frame buffer that is being modified ?
             SDL_UpdateTexture(m_framebuffer, NULL, emu.get_lcd().get_fb(), 160 * sizeof(u32));
             SDL_RenderClear(m_renderer);
             SDL_RenderCopy(m_renderer, m_framebuffer, NULL, NULL);
@@ -80,7 +95,6 @@ int main(int argc, char** argv)
         }
     }
 
-out:
     emu_thread.join();
     SDL_DestroyTexture(m_framebuffer);
     SDL_DestroyRenderer(m_renderer);

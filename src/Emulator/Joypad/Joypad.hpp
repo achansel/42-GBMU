@@ -1,13 +1,12 @@
-#ifndef GAMEBOYPROJECT_JOYPAD_HPP
-#define GAMEBOYPROJECT_JOYPAD_HPP
+#pragma once
 
 #include <SDL.h>
 #include <array>
 
 class Emulator;
 
-#include "../Util/Types.hpp"
-#include "../Util/Bitwise.hpp"
+#include <Emulator/Util/Types.hpp>
+#include <Emulator/Util/Bitwise.hpp>
 
 class Joypad {
 public:
@@ -26,6 +25,3 @@ private:
     u8 m_column;
     std::array<u8, 2> m_rows = {0x0F, 0x0F};
 };
-
-
-#endif //GAMEBOYPROJECT_JOYPAD_HPP

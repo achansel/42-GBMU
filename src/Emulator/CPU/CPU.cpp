@@ -1,6 +1,8 @@
 #include <Emulator/CPU/CPU.hpp>
 #include <Emulator/Emulator.hpp>
 
+#include <iomanip>
+
 CPU::CPU(Emulator* emu)
 {
     m_emu = emu;
@@ -12,10 +14,6 @@ CPU::CPU(Emulator* emu)
 
 void CPU::saveafterinstruction()
 {
-    if (savestate == nullptr)
-        savestate = fopen("states.bin", "wb");
-    fwrite((void*)m_regs, sizeof(u8), 10, savestate);
-    fwrite((void*)&PC, sizeof(u16), 1, savestate);
 }
 
 void CPU::tick()
@@ -32,19 +30,29 @@ void CPU::tick()
 void CPU::debug_stop()
 {
 	#ifndef NDEBUG
-		std::cout << "GBMU: CPU FATAL:" << std::endl;
 		u16 SP = GET_COMPOSED_REG(RegisterSP);
-		printf("\tREGS: A: 0x%02X, B:0x%02X, C:0x%02X, D:0x%02X, E:0x%02X, H:0x%02X, L:0x%02X, F:0x%02X\n\t\tSP:0x%04X, PC:0x%04X\n", GET_REG(RegisterA), GET_REG(RegisterB), GET_REG(RegisterC), GET_REG(RegisterD), GET_REG(RegisterE), GET_REG(RegisterH), GET_REG(RegisterL), GET_REG(RegisterF), SP, PC);
-		printf("\tHALTED OPCODE (could be wrong lol) (NOT XCUTED): %02X\n", m_opcode);
-		std::cout << "\tat " << std::hex << SP << ": " << m_emu->get_MMU().get_word_at(SP) << std::endl;
-		std::cout << "\tat " << std::hex << SP + 2 << ": " << m_emu->get_MMU().get_word_at(SP + 2) << std::endl;
-		std::cout << "\tat " << std::hex << SP + 4 << ": " << m_emu->get_MMU().get_word_at(SP + 4) << std::endl;
-		std::cout << "\tat " << std::hex << SP + 6 << ": " << m_emu->get_MMU().get_word_at(SP + 6) << std::endl;
-		std::cout << "\tat " << std::hex << SP + 8 << ": " << m_emu->get_MMU().get_word_at(SP + 8) << std::endl;
-		std::cout << "\tat " << std::hex << SP + 10 << ": " << m_emu->get_MMU().get_word_at(SP + 10) << std::endl;
-		std::cout << "\tat " << std::hex << SP + 12 << ": " << m_emu->get_MMU().get_word_at(SP + 12) << std::endl;
+		
+		std::cout << "GBMU: CPU FATAL:" << std::endl;
+		std::cout << "\tHALTED OPCODE: " << std::hex << +m_opcode << std::endl;
+		std::cout << "\tREGS: " << std::hex
+			<< "A: 0x" << std::setfill('0') << std::setw(2) << +GET_REG(RegisterA) << ", "
+			<< "B: 0x" << std::setfill('0') << std::setw(2) << +GET_REG(RegisterB) << ", "
+			<< "C: 0x" << std::setfill('0') << std::setw(2) << +GET_REG(RegisterC) << ", "
+			<< "D: 0x" << std::setfill('0') << std::setw(2) << +GET_REG(RegisterD) << ", "
+			<< "E: 0x" << std::setfill('0') << std::setw(2) << +GET_REG(RegisterE) << ", "
+			<< "H: 0x" << std::setfill('0') << std::setw(2) << +GET_REG(RegisterH) << ", "
+			<< "L: 0x" << std::setfill('0') << std::setw(2) << +GET_REG(RegisterL) << ", "
+			<< "F: 0x" << std::setfill('0') << std::setw(2) << +GET_REG(RegisterF) << "\n\t"
+			<< "SP: 0x" << std::setfill('0') << std::setw(4) << SP << ", "
+			<< "PC: 0x" << std::setfill('0') << std::setw(4) << PC << std::endl;
+		std::cout << "      STACK: " << std::endl;
+		for (size_t i = 0; i < 16 && SP + i < 0x10000; i += 2 )
+			std::cout << "\tat " << std::hex << SP + i << " (SP + " << i << "): " << std::setfill('0') << std::setw(4) << m_emu->get_MMU().get_word_at(SP + i) << std::endl;
 		m_emu->get_cartridge().debug();
 
+		exit(1);
+	#else
+		std::cout << "GBMU: FATAL: CPU ERROR ENCOUNTERED" << std::endl;
 		exit(1);
 	#endif
 
@@ -85,6 +93,7 @@ inline void CPU::execute_next_instruction()
     }
 
 	// Quick hack to not service interrupt right after it was enabled
+	// TODO: IMRPOVE (HERE EI AND RETI)
 	if (m_opcode == 0xFB || m_opcode == 0xD9)
 		return ;
 

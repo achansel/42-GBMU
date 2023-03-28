@@ -1,10 +1,9 @@
-#ifndef GAMEBOYPROJECT_LCD_HPP
-#define GAMEBOYPROJECT_LCD_HPP
+#pragma once
 
 #include <array>
 #include <iostream>
 
-#include "../Util/Types.hpp"
+#include <Emulator/Util/Types.hpp>
 
 class Emulator;
 
@@ -26,25 +25,19 @@ public:
     void write_byte(u16 memory_loc, u8 value);
     void write_byte_at_oam(u8 memory_loc, u8 value);
 
-	void request_interrupts();
-	void perform_dma(u8 tclock);
-
     void reset();
     void updatetile(u16 addr);
-    void renderscan();
-
-    void render_tile(int tile_idx, int start_x, int start_y);
 
     bool need_to_draw = false;
 private:
 	Emulator *m_emu;
 
+	void request_interrupts();
+    void renderscan();
+
 	/* TODO: Implement blocking of whole address space but HRAM during DMA Transfer */
-	void init_dma_transfer()
-	{
-		m_dma_cycles_left = 640;
-		m_dma_offset = 0;
-	}
+	void perform_dma(u8 tclock);
+	void init_dma_transfer();
 
 	std::array<u8, 8192> m_video_ram{0};
 
@@ -61,6 +54,7 @@ private:
 	std::array<Sprite, 40>	m_sprites;
 
     u32 m_framebuffer[144*160];
+
     int m_modeclock, m_line = 1;
     Mode m_mode = Mode::LINE_BACKGROUND;
 
@@ -68,9 +62,10 @@ private:
 	bool m_spriteon, m_spritesz;
 	bool m_windowon, m_windowmap;
 
-	u8 m_wx, m_wy;
-	u8 m_window_line;
-	bool m_should_display_window;
+	u8		m_wx, m_wy;
+	u8		m_window_line;
+    u8		m_scx, m_scy;
+	bool	m_should_display_window;
 
 	u8 m_lyc;
 	u8 m_stat_int_sources;
@@ -79,19 +74,15 @@ private:
 	u16 m_dma_cycles_left = 0;
 	u8	m_dma_offset;
 
-    u8 m_scx, m_scy;
 
 	// https://lospec.com/palette-list
 	// good pals
+	
 	//TODO: IMRPOVE PALETTE HANDLING
 	u8 m_raw_pal[3];
-
     u32 m_pal[4];
 	u32 m_obj_pal0[4];
 	u32 m_obj_pal1[4];
 
     u8 m_tileset[384][8][8];
 };
-
-
-#endif //GAMEBOYPROJECT_LCD_HPP

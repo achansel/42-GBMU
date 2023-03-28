@@ -9,8 +9,8 @@
 // TODO: Maybe try casting to u16 the regs array and read from it
 ALWAYS_INLINE u8	CPU::GET_REG(Register reg)						{ return m_regs[reg]; }
 ALWAYS_INLINE u8	CPU::GET_REG_BIT(Register reg, u8 bit)			{ return (m_regs[reg] >> bit) & 1; }
-ALWAYS_INLINE void	CPU::SET_REG(Register reg, u8 value)				{ m_regs[reg] = value; }
-ALWAYS_INLINE void	CPU::SET_REG_BIT(Register reg, u8 bit, u8 value)	{ m_regs[reg] ^= ((-value) ^ m_regs[reg]) & (1U << bit); }
+ALWAYS_INLINE void	CPU::SET_REG(Register reg, u8 value)			{ m_regs[reg] = value; }
+ALWAYS_INLINE void	CPU::SET_REG_BIT(Register reg, u8 bit, u8 value){ m_regs[reg] ^= ((-value) ^ m_regs[reg]) & (1U << bit); }
 ALWAYS_INLINE void	CPU::INC_REG(Register reg)						{ m_regs[reg]++; }
 ALWAYS_INLINE void	CPU::DEC_REG(Register reg)						{ m_regs[reg]--; }
 

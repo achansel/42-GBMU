@@ -19,12 +19,14 @@ public:
 
 	void debug()
 	{
-		std::cout << "CARTRIDGE: MBC5 (ROM BANK/RAM BANK): " << std::hex << m_selected_rom_bank << "/" << m_selected_ram_bank << std::endl;
+		std::cout << "GBMU: CARTRIDGE: MBC5 (ROM BANK/RAM BANK): " << std::hex << m_selected_rom_bank << "/" << m_selected_ram_bank << std::endl;
+		std::cout << "\t\t\t\t\t\t\t\t\t\tBATTERY: " << std::boolalpha << m_battery << ", RUMBLE: " << m_rumble << std::endl;
 	}
 
     u8  read_rom(u16 address)
     {
-        //TODO: PREVENT IT FROM SEGFAULT BY CHANGING WRITE ROM
+        /* TODO: Prevent this function from accessing out of bounds memory, by checking if the mapped bank is correct in write_rom and write ram,
+			Do it there and not in this function for obvious performance reasons */
         if (address <= 0x3FFF)
             return (m_rom[address]);
         else
@@ -32,7 +34,8 @@ public:
     }
 	u8  read_ram(u16 address)
     {
-        //TODO: PREVENT IT FROM SEGFAULT BY CHANGING WRITE ROM
+        /* TODO: Prevent this function from accessing out of bounds memory, by checking if the mapped bank is correct in write_rom and write ram,
+			Do it there and not in this function for obvious performance reasons */
         if (m_ram && m_ram_enabled)
             return (m_ram[m_selected_ram_bank * 0x2000 + (address & 0x1FFF)]);
 		else
@@ -64,7 +67,7 @@ public:
             m_ram[m_selected_ram_bank * 0x2000 + (address & 0x1FFF)] = value;
 		else
 		{
-			std::cout << "GBMU: DEBUG: RAM READ WITHOUT HAVING IT ENABLED" << std::endl;
+			std::cout << "GBMU: CART: DEBUG: RAM READ WITHOUT HAVING IT ENABLED" << std::endl;
 		}
 
     }

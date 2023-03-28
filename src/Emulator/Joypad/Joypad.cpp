@@ -1,7 +1,7 @@
 #include <iostream>
-#include <Emulator/Emulator.hpp>
 
-#include "Joypad.hpp"
+#include <Emulator/Emulator.hpp>
+#include <Emulator/Joypad/Joypad.hpp>
 
 Joypad::Joypad(Emulator *emu)
 	: m_emu(emu)
@@ -24,13 +24,13 @@ u8 Joypad::read_byte()
     {
         case 1: return m_rows[0];
         case 2: return m_rows[1];
-		default: return (1);
+		default: return (0xFF);
     }
 }
 
 void Joypad::key_down(SDL_Event e)
 {
-	u8	b = this->read_byte();
+	u8 old_state = read_byte();
 
     switch (e.key.keysym.sym)
     {
@@ -47,22 +47,22 @@ void Joypad::key_down(SDL_Event e)
             m_rows[0] &= ~(0x8); // ENTER gameboy key
             break;
         case SDLK_RIGHT:
-            m_rows[1] &= ~(0x1);
+            m_rows[1] &= ~(0x1); // >
             break;
         case SDLK_LEFT:
-            m_rows[1] &= ~(0x2);
+            m_rows[1] &= ~(0x2); // <
             break;
         case SDLK_UP:
-            m_rows[1] &= ~(0x4);
+            m_rows[1] &= ~(0x4); // ^
             break;
         case SDLK_DOWN:
-            m_rows[1] &= ~(0x8);
+            m_rows[1] &= ~(0x8); // v
             break;
         default:
             break;
     }
 
-	if (b != this->read_byte())
+	if (old_state != this->read_byte())
 		m_emu->get_CPU().request_interrupt(CPU::Interrupt::JOYPAD);
 }
 

@@ -14,7 +14,7 @@ void CPU::fill_instructions_table()
 	i[0xFB] = &CPU::EI;
 	i[0x76] = &CPU::HALT;
 
-	/* No use of PREFIXED_OP_REG here because the instructions, when executed from the non-prefixed opcodes, set the Z flag to 0 */
+	/* No use of PREFIXED_OP_REG here because the instructions, when executed from the non-prefixed opcodes, set the Z flag to 0, always */
 	i[0x07] = &CPU::RLCA;
 	i[0x17] = &CPU::RLA;
 	i[0x0F] = &CPU::RRCA;

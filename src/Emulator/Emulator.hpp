@@ -1,19 +1,14 @@
-/*
- * TODO: Fix the timings
- */
-
-#ifndef GAMEBOYPROJECT_EMULATOR_HPP
-#define GAMEBOYPROJECT_EMULATOR_HPP
+#pragma once
 
 #include <string>
+#include <iostream>
 
-
-#include "CPU/CPU.hpp"
-#include "Memory/MMU.hpp"
-#include "Joypad/Joypad.hpp"
-#include "Timer/Timer.hpp"
-#include "LCD/LCD.hpp"
-#include "Memory/Cartridge/Cartridge.hpp"
+#include <Emulator/CPU/CPU.hpp>
+#include <Emulator/Memory/MMU.hpp>
+#include <Emulator/Joypad/Joypad.hpp>
+#include <Emulator/Timer/Timer.hpp>
+#include <Emulator/LCD/LCD.hpp>
+#include <Emulator/Memory/Cartridge/Cartridge.hpp>
 
 class Emulator {
 public:
@@ -22,8 +17,6 @@ public:
 
     void run();
     void reset();
-
-    void draw_frame();
 
     MMU& get_MMU();
     CPU& get_CPU();
@@ -39,6 +32,3 @@ private:
     LCD m_lcd;
 	Timer m_timer;
 };
-
-
-#endif //GAMEBOYCOLORPROJECT_EMULATOR_HPP

@@ -8,7 +8,6 @@
 
 class Emulator;
 
-
 #define ALWAYS_INLINE
 
 enum Register {RegisterB = 0, RegisterC = 1, RegisterD = 2, RegisterE = 3, RegisterH = 4, RegisterL = 5, RegisterF = 6, RegisterA = 7};
@@ -26,11 +25,9 @@ public:
 	};
 
     explicit CPU(Emulator *emu);
-	~CPU() {std::cout << "~CPU() was called\nPC: " << std::hex << PC << std::endl; }
+	~CPU() {std::cout << "~CPU() was called\nPC: " << std::hex << PC << std::endl; debug_stop(); }
 
     void tick();
-    void step_lcd();
-	void step_timer();
 
     u8 read_byte_at_working_ram(u16 position);
     void write_byte_at_working_ram(u16 position, u8 value);
@@ -48,10 +45,14 @@ public:
     u16 PC;
 
 	void debug_stop();
+
 	//TODO: STOPPING OF THE CPU
 	bool is_stopped() { return (false); }
 private:
 	typedef void (CPU::*InstructionPtr)(void);
+
+    void step_lcd();
+	void step_timer();
 
 	void fetch_instruction();
     void execute_next_instruction();
@@ -70,8 +71,6 @@ private:
 	u8 m_if_reg;
 	bool m_ime;
     
-
-    FILE* savestate = nullptr;
     u8 m_opcode;
 
     Emulator* m_emu;
@@ -113,7 +112,6 @@ private:
 	#include "Instructions/System.inl"
 	#include "Instructions/Prefixed.inl"
 
-	/* INSTRUCTIONS FUNCTIONS MESS */
 	void UNDEFINED() { std::cout << "GBMU: FATAL: UNDEFINED OPCODE; SYSTEM HALTED" << std::endl; debug_stop(); }
 	void UNDEFINED_CB() { std::cout << "GBMU: FATAL: UNDEFINED OPCODE CB; SYSTEM HALTED" << std::endl; debug_stop(); }
 };

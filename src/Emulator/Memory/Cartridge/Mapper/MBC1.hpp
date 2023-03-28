@@ -1,7 +1,6 @@
 #include "AMapper.hpp"
 
-//TODO: FINISH AND IMPLEMENT CORRECTLY
-
+/* TODO: Implement a proper MBC1, this one was done quickly in order to test a few games. */
 class MBC1 : public AMapper
 {
 public:

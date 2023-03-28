@@ -1,6 +1,4 @@
-#ifndef GAMEBOYPROJECT_CARTRIDGE_HPP
-#define GAMEBOYPROJECT_CARTRIDGE_HPP
-
+#pragma once
 
 #include <string>
 #include <array>
@@ -58,14 +56,6 @@ public:
     void 	write_byte(u16 memory_loc, u8 value);
     void	write_byte_at_ext_ram(u16 memory_loc, u8 value);
 
-	/*
-	u8		raw_get_rom(u32 address);
-	u8		raw_get_ram(u32 address);
-
-	void	raw_write_rom(u32 address, u8 byte);
-	void	raw_write_ram(u32 address, u8 byte);
-	*/
-
 	static bool is_supported_mbc(CartridgeType t);
 private:
 	std::string		m_title;
@@ -74,9 +64,7 @@ private:
 	u8				m_cgb_flag;
 	u8				m_destination_code;
 	u8				m_mask_rom_version_number;
+	CartridgeType	m_cartridge_type;
 
 	std::unique_ptr<AMapper>	m_mapper;
 };
-
-
-#endif //GAMEBOYPROJECT_CARTRIDGE_HPP

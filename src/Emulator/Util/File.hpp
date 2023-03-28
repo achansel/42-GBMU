@@ -1,5 +1,6 @@
-#include <fstream>
+#pragma once
 
+#include <fstream>
 #include <Emulator/Util/Types.hpp>
 
 namespace Util

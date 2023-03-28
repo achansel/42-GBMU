@@ -14,19 +14,12 @@ Emulator::Emulator(const std::string& path_to_game):
 
 Emulator::~Emulator()
 {
-	std::cout << "~Emulator(void) was called\n\n";
 }
 
 void Emulator::run() {
-    m_lcd.reset();
     while (!m_cpu.m_exit)
         m_cpu.tick();
     //m_mmu.dumpmem();
-}
-
-void Emulator::draw_frame()
-{
-
 }
 
 void Emulator::reset() {

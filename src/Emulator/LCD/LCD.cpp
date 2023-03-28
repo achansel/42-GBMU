@@ -20,6 +20,13 @@ void LCD::perform_dma(u8 t)
         write_byte_at_oam(m_dma_offset++, m_emu->get_MMU().get_byte_at(src + c));
 }
 
+void LCD::init_dma_transfer()
+{
+	m_dma_cycles_left = 640;
+	m_dma_offset = 0;
+}
+
+
 // TODO: Fix interrupts and maybe timings so that TLOZ Links Awakening works
 void LCD::request_interrupts()
 {
@@ -322,13 +329,10 @@ void LCD::updatetile(u16 addr) {
 
 void LCD::renderscan()
 {
-	//std::cout << "GBMU: DEBUG: " << "window_on " << m_windowon << ", wx: " << std::hex << +m_wx << ", wy: " << +m_wy <<std::endl;
-
-	// TODO: REFACTOR AND FIX SPRITES
-	// Select sprites
 	std::vector<std::reference_wrapper<Sprite>>				selection;
 	size_t													selection_idx;
 
+	// Select sprites
 	if (m_spriteon)
 	{
 		selection_idx = 0;
