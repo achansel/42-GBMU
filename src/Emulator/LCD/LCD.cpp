@@ -326,15 +326,22 @@ void LCD::renderscan()
 
 	// TODO: REFACTOR AND FIX SPRITES
 	// Select sprites
-	std::vector<std::reference_wrapper<Sprite>> selection;
+	std::vector<std::reference_wrapper<Sprite>>				selection;
+	size_t													selection_idx;
+
 	if (m_spriteon)
 	{
+		selection_idx = 0;
 		selection.reserve(10);
+		
+		// Fetch sprites that need to be drawn
 		for (Sprite &s : m_sprites)
 		{
+			// Sprite could be on line
 			if (m_line < s.y && m_line >= s.y - 16)
 			{
-				if (m_spritesz || (m_line < s.y - 8))  // sprite displayed on current y
+				// Is sprite on this scanline according to its size
+				if (m_spritesz || (m_line < s.y - 8))
 				{
 					selection.push_back(s);
 					if (selection.size() == 10)
@@ -342,20 +349,21 @@ void LCD::renderscan()
 				}
 			}
 		}
-		/* TODO: FIX: Doesnt keep order of apparition from OAM in case two sprites have the same x */
-		std::sort(selection.begin(), selection.end(), [](std::reference_wrapper<Sprite> &a, std::reference_wrapper<Sprite> &b) { return (a.get().x < b.get().x); });
+		std::stable_sort(selection.begin(), selection.end(), [](const std::reference_wrapper<Sprite> &a, const std::reference_wrapper<Sprite> &b) { return (a.get().x < b.get().x); });
 	}
 
 
-    // select right background map
+    /* Select right tile map for the tile we are about to draw
+		if there is a window where we draw */
     int map_offset		= m_bgmap ? 0x1C00 : 0x1800;
 
-    // >> 3 -> divide by 8 to select right tile,
-    // << 5 -> multiply by 32 to skip n tiles instead of n bytes
     map_offset += (((m_line + m_scy) & 255) >> 3) << 5;
 	if (m_should_display_window && m_wx == 0 + 7)
 		map_offset = (m_windowmap ? 0x1C00 : 0x1800) + ((m_window_line >> 3) << 5);
 
+	/* The code that picks the right tile to draw, 
+		if we are drawing background, select tile according to position on screen and scroll regs
+		otherwise simply select the tile by the position relative to the window */
     int line_offset = m_scx >> 3;
     u8            y = (m_line + m_scy) & 7;
     u8            x = m_scx & 7;
@@ -367,30 +375,29 @@ void LCD::renderscan()
 		x = 0;
 	}
 
-    int framebuffer_offset = m_line * 160;
+    u32 *framebuffer_ptr = m_framebuffer + (m_line * 160);
 
+	/*	Then finally get the right tile index from the tile map
+		Here, the io register bgwintile tells us which tile set to use. */
     u16 tile = m_video_ram[map_offset + line_offset];
     if (!m_bgwintile)
 		tile = static_cast<u16>(256 + static_cast<s8>(tile & 0xFF));
 
-	auto s = selection.begin();
-
+	/* For each pixel of the scanline */
     for (size_t i = 0; i < 160; i++)
     {
         // Re-map the tile pixel through the palette and put it to screen
-        m_framebuffer[framebuffer_offset] = m_pal[m_tileset[tile][y][x]];
+        *framebuffer_ptr = m_pal[m_tileset[tile][y][x]];
 
 		// Sprite appears here
-		// TODO: FLIPPING OF SPRITES
-		// TODO: MAYBE IMPROVE ALGO BY KEEPING AN X IN MEMORY ?
-		// TODO: Add uniqueness on x on the sprites, otherwise this will bug on two sprites in the same x coord, by never skipping the 2nd one
-		if (!selection.empty() && s != selection.end() && s->get().x - 8 <= (int)(i) && s->get().x > (int)(i))
+		bool already_drawn = false;
+		for (auto s = selection.begin() + selection_idx ; !selection.empty() && s != selection.end() && s->get().x - 8 <= (int)(i) && s->get().x > (int)(i) ; ++s)
 		{
 			// Get tile and x and y coordinate inside of tile
 			u8	tile_x		= i			- (s->get().x - 8);
 			u8	tile_y		= m_line	- (s->get().y - 16);
 
-			// Flipping (probably doesnt work on y)
+			// Flipping (maybe does not work on y axis)
 			if (s->get().x_flip)
 				tile_x = 7 - tile_x;
 			if (s->get().y_flip)
@@ -406,21 +413,21 @@ void LCD::renderscan()
 
 			// Check if we have a visible pixel
 			u8 col = m_tileset[sprite_tile][tile_y][tile_x];
-			if (col && (!s->get().background || (s->get().background && !m_tileset[tile][y][x])))
+			if (col && !already_drawn && (!s->get().background || (s->get().background && !m_tileset[tile][y][x])))
 			{
 				// Get color mapped through palette and show it
 				if (s->get().palette)
-					m_framebuffer[framebuffer_offset] = m_obj_pal1[col];
+					*framebuffer_ptr = m_obj_pal1[col];
 				else
-					m_framebuffer[framebuffer_offset] = m_obj_pal0[col];
+					*framebuffer_ptr = m_obj_pal0[col];
+				already_drawn = true;
 			}
 
 			// Go to next sprite if this x marks the end of it
 			if (i + 1 == s->get().x)
-				s++;
+				selection_idx++;
 		}
-
-		framebuffer_offset++;
+		framebuffer_ptr++;
 
         // Go to next tile
         x++;
@@ -429,7 +436,7 @@ void LCD::renderscan()
             x = 0;
             line_offset = (line_offset + 1) & 31;
             tile = m_video_ram[map_offset + line_offset];
-			//TODO: WINDOW ENABLING MID FRAME with m_wx != 7
+			//TODO: WINDOW ENABLING MID FRAME when m_wx > 7
 
 		    if (!m_bgwintile)
 				tile = static_cast<u16>(256 + static_cast<s8>(tile & 0xFF));
