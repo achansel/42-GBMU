@@ -48,6 +48,8 @@ Cartridge::Cartridge(const std::string& path_to_game) {
 		m_mapper = AMapper::make<ROMOnly>(path_to_game, rom, rom_size, ram_size);
 	else if (cartridge_type >= CartridgeType::MBC5_RAM && cartridge_type <= CartridgeType::MBC5_RUMBLE_RAM_BATTERY)
 		m_mapper = AMapper::make<MBC5>(path_to_game, rom, rom_size, ram_size, cartridge_type == CartridgeType::MBC5_RAM_BATTERY || cartridge_type == CartridgeType::MBC5_RUMBLE_RAM_BATTERY, false);
+	else if (cartridge_type >= CartridgeType::MBC1 && cartridge_type <= CartridgeType::MBC1_RAM_BATTERY)
+		m_mapper = AMapper::make<MBC1>(path_to_game, rom, rom_size, ram_size, cartridge_type == CartridgeType::MBC1_RAM_BATTERY);
 }
 
 Cartridge::~Cartridge()
@@ -81,5 +83,6 @@ void Cartridge::write_byte_at_ext_ram(u16 memory_loc, u8 value)
 bool Cartridge::is_supported_mbc(CartridgeType type)
 {
 	return (type == CartridgeType::ROM_ONLY
-		||	type == CartridgeType::MBC5_RAM_BATTERY); // pk blue
+		||	type == CartridgeType::MBC5_RAM_BATTERY // pk blue
+		||	type == CartridgeType::MBC1);			// blarggs cpu test roms
 }

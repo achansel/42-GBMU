@@ -13,6 +13,7 @@
 #include <Emulator/Memory/Cartridge/Mapper/AMapper.hpp>
 #include <Emulator/Memory/Cartridge/Mapper/ROMOnly.hpp>
 #include <Emulator/Memory/Cartridge/Mapper/MBC5.hpp>
+#include <Emulator/Memory/Cartridge/Mapper/MBC1.hpp>
 
 enum class CartridgeType {
 	ROM_ONLY						= 0x00,

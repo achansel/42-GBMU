@@ -78,18 +78,18 @@ private:
 	std::array<u8, 8192> m_working_ram{ 0 };
 
 	/* MESS STARTING FROM HERE */
-	ALWAYS_INLINE u8	GET_REG(u8 reg);
-	ALWAYS_INLINE void	SET_REG(u8 reg, u8 value);
-	ALWAYS_INLINE void	INC_REG(u8 reg);
-	ALWAYS_INLINE void	DEC_REG(u8 reg);
+	ALWAYS_INLINE u8	GET_REG(Register reg);
+	ALWAYS_INLINE void	SET_REG(Register reg, u8 value);
+	ALWAYS_INLINE void	INC_REG(Register reg);
+	ALWAYS_INLINE void	DEC_REG(Register reg);
 
-	ALWAYS_INLINE u8	GET_REG_BIT(u8 reg, u8 bit);
-	ALWAYS_INLINE void	SET_REG_BIT(u8 reg, u8 bit, u8 value);
+	ALWAYS_INLINE u8	GET_REG_BIT(Register reg, u8 bit);
+	ALWAYS_INLINE void	SET_REG_BIT(Register reg, u8 bit, u8 value);
 
-	ALWAYS_INLINE u16	GET_COMPOSED_REG(u8 reg);
-	ALWAYS_INLINE void	SET_COMPOSED_REG(u8 reg, u16 value);
-	ALWAYS_INLINE void	INC_COMPOSED_REG(u8 reg);
-	ALWAYS_INLINE void	DEC_COMPOSED_REG(u8 reg);
+	ALWAYS_INLINE u16	GET_COMPOSED_REG(ComposedRegister reg);
+	ALWAYS_INLINE void	SET_COMPOSED_REG(ComposedRegister reg, u16 value);
+	ALWAYS_INLINE void	INC_COMPOSED_REG(ComposedRegister reg);
+	ALWAYS_INLINE void	DEC_COMPOSED_REG(ComposedRegister reg);
 
 	ALWAYS_INLINE void	SET_FLAG(u8 flag, u8 value);
 	ALWAYS_INLINE u8	GET_FLAG(u8 flag);

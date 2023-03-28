@@ -27,7 +27,7 @@ void ADD_SP_IMM8()
 	m_tclock += 8;
 	
 	u32 n = GET_COMPOSED_REG(RegisterSP) + static_cast<s8>(FETCH_BYTE());
-	SET_REG(RegisterSP, static_cast<u16>(n));
+	SET_COMPOSED_REG(RegisterSP, static_cast<u16>(n));
 	SET_FLAG(ZeroFlag, 0);
 	SET_FLAG(SubstractFlag, 0);
     SET_FLAG(HalfCarryFlag, !!(n & 0x10));

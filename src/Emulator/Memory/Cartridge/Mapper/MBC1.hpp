@@ -1,26 +1,23 @@
 #include "AMapper.hpp"
 
-class MBC5 : public AMapper
+//TODO: FINISH AND IMPLEMENT CORRECTLY
+
+class MBC1 : public AMapper
 {
 public:
-    MBC5(std::string rom_path, u8 *rom, u32 rom_size, u32 ram_size, bool battery, bool rumble)
+    MBC1(std::string rom_path, u8 *rom, u32 rom_size, u32 ram_size, bool battery)
         :   AMapper(rom_path, rom, rom_size, ram_size),
-            m_battery(battery), m_rumble(rumble), m_ram_enabled(false), m_selected_rom_bank(1), m_selected_ram_bank(0)
+            m_battery(battery), m_ram_enabled(false), m_selected_rom_bank(1), m_selected_ram_bank(0)
     {
         if (m_battery)
             Util::load_save(m_rom_path + ".sav", m_ram, ram_size);
     }
 
-    ~MBC5()
+    ~MBC1()
     {
         if (m_battery)
             Util::write_save(m_rom_path + ".sav", m_ram, m_ram_size);
     }
-
-	void debug()
-	{
-		std::cout << "CARTRIDGE: MBC5 (ROM BANK/RAM BANK): " << std::hex << m_selected_rom_bank << "/" << m_selected_ram_bank << std::endl;
-	}
 
     u8  read_rom(u16 address)
     {
@@ -35,11 +32,7 @@ public:
         //TODO: PREVENT IT FROM SEGFAULT BY CHANGING WRITE ROM
         if (m_ram && m_ram_enabled)
             return (m_ram[m_selected_ram_bank * 0x2000 + (address & 0x1FFF)]);
-		else
-		{
-			std::cout << "GBMU: DEBUG: RAM READ WITHOUT HAVING IT ENABLED" << std::endl;
-        	return (0xFF);
-		}
+        return (0xFF);
     }
 
 	void  write_rom(u16 address, u8 value)
@@ -51,10 +44,8 @@ public:
             else if (value == 0x00)
                 m_ram_enabled = false;
         }
-        else if (address <= 0x2FFF)
-            m_selected_rom_bank = (m_selected_ram_bank & (1 << 8)) | value;
-        else if (address <= 0x3FFF)
-            m_selected_rom_bank = (m_selected_ram_bank & 0xFF) | ((value & 1) << 8);
+        else if (address >= 0x2000 && address <= 0x3FFF)
+            m_selected_rom_bank = (value ? value & 0x1F : 1);
         else if (address <= 0x5FFF)
             m_selected_ram_bank = value & 0x0F;
     }
@@ -62,15 +53,9 @@ public:
     {
         if (m_ram && m_ram_enabled)
             m_ram[m_selected_ram_bank * 0x2000 + (address & 0x1FFF)] = value;
-		else
-		{
-			std::cout << "GBMU: DEBUG: RAM READ WITHOUT HAVING IT ENABLED" << std::endl;
-		}
-
     }
 private:
     bool    m_battery;
-    bool    m_rumble;
 
     bool    m_ram_enabled;
     u16     m_selected_rom_bank;

@@ -7,25 +7,25 @@
 
 /* Registers instructions */
 // TODO: Maybe try casting to u16 the regs array and read from it
-ALWAYS_INLINE u8	CPU::GET_REG(u8 reg)						{ return m_regs[reg]; }
-ALWAYS_INLINE u8	CPU::GET_REG_BIT(u8 reg, u8 bit)			{ return (m_regs[reg] >> bit) & 1; }
-ALWAYS_INLINE void	CPU::SET_REG(u8 reg, u8 value)				{ m_regs[reg] = value; }
-ALWAYS_INLINE void	CPU::SET_REG_BIT(u8 reg, u8 bit, u8 value)	{ m_regs[reg] ^= ((-value) ^ m_regs[reg]) & (1U << bit); }
-ALWAYS_INLINE void	CPU::INC_REG(u8 reg)						{ m_regs[reg]++; }
-ALWAYS_INLINE void	CPU::DEC_REG(u8 reg)						{ m_regs[reg]--; }
+ALWAYS_INLINE u8	CPU::GET_REG(Register reg)						{ return m_regs[reg]; }
+ALWAYS_INLINE u8	CPU::GET_REG_BIT(Register reg, u8 bit)			{ return (m_regs[reg] >> bit) & 1; }
+ALWAYS_INLINE void	CPU::SET_REG(Register reg, u8 value)				{ m_regs[reg] = value; }
+ALWAYS_INLINE void	CPU::SET_REG_BIT(Register reg, u8 bit, u8 value)	{ m_regs[reg] ^= ((-value) ^ m_regs[reg]) & (1U << bit); }
+ALWAYS_INLINE void	CPU::INC_REG(Register reg)						{ m_regs[reg]++; }
+ALWAYS_INLINE void	CPU::DEC_REG(Register reg)						{ m_regs[reg]--; }
 
 
-ALWAYS_INLINE u16 CPU::GET_COMPOSED_REG(u8 reg)
+ALWAYS_INLINE u16 CPU::GET_COMPOSED_REG(ComposedRegister reg)
 {
 	return Bitwise::compose_word(m_regs[reg >> 4], m_regs[reg & 0xF]);
 }
-ALWAYS_INLINE void CPU::SET_COMPOSED_REG(u8 reg, u16 value)
+ALWAYS_INLINE void CPU::SET_COMPOSED_REG(ComposedRegister reg, u16 value)
 {
-    this->SET_REG(reg & 0x0F, static_cast<u8>(value));
-	this->SET_REG(reg >> 4,	  static_cast<u8>(value >> 8));
+    this->SET_REG(static_cast<Register>(static_cast<u8>(reg) & 0x0F),	static_cast<u8>(value));
+	this->SET_REG(static_cast<Register>(static_cast<u8>(reg) >> 4),		static_cast<u8>(value >> 8));
 }
-ALWAYS_INLINE void	CPU::INC_COMPOSED_REG(u8 reg) { u16 value = GET_COMPOSED_REG(reg); value++; SET_COMPOSED_REG(reg, value); }
-ALWAYS_INLINE void	CPU::DEC_COMPOSED_REG(u8 reg) {	u16 value = GET_COMPOSED_REG(reg); value--; SET_COMPOSED_REG(reg, value); }
+ALWAYS_INLINE void	CPU::INC_COMPOSED_REG(ComposedRegister reg) { u16 value = GET_COMPOSED_REG(reg); value++; SET_COMPOSED_REG(reg, value); }
+ALWAYS_INLINE void	CPU::DEC_COMPOSED_REG(ComposedRegister reg) {	u16 value = GET_COMPOSED_REG(reg); value--; SET_COMPOSED_REG(reg, value); }
 
 ALWAYS_INLINE void CPU::SET_FLAG(u8 flag, u8 value)
 {

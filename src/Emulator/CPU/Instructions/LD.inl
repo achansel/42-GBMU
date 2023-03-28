@@ -1,7 +1,7 @@
 ALWAYS_INLINE void MOV_ADDR_8(u16 address, u8 value)	{ this->WRITE_BYTE(address, value); }
 ALWAYS_INLINE void MOV_ADDR_16(u16 address, u16 value)	{ this->WRITE_WORD(address, value); }
-ALWAYS_INLINE void MOV_REG_8(u8 reg, u8 value)			{ this->SET_REG(reg, value); }
-ALWAYS_INLINE void MOV_REG_16(u8 reg, u16 value)		{ this->SET_COMPOSED_REG(reg, value); }
+ALWAYS_INLINE void MOV_REG_8(Register reg, u8 value)			{ this->SET_REG(reg, value); }
+ALWAYS_INLINE void MOV_REG_16(ComposedRegister reg, u16 value)		{ this->SET_COMPOSED_REG(reg, value); }
 
 template<u16 a, Register reg>
 ALWAYS_INLINE void MOV_ADDR_REG() 	 					{ MOV_ADDR_8(a, this->GET_REG(reg)); }
@@ -11,14 +11,14 @@ ALWAYS_INLINE void MOV_ADDR_REG()						{ MOV_ADDR_16(a, this->GET_COMPOSED_REG(r
 
 template<Register dst, Register src>
 ALWAYS_INLINE void MOV_REG_REG()						{ MOV_REG_8(dst, this->GET_REG(src)); }
-ALWAYS_INLINE void MOV_REG16_REG16(u8 dst, u8 src)		{ MOV_REG_16(dst, this->GET_COMPOSED_REG(src));}
+ALWAYS_INLINE void MOV_REG16_REG16(ComposedRegister dst, ComposedRegister src)		{ MOV_REG_16(dst, this->GET_COMPOSED_REG(src));}
 
 template<Register dst>
 ALWAYS_INLINE void MOV_REG_IMM()						{ MOV_REG_8(dst, this->FETCH_BYTE()); }
 template<ComposedRegister dst>
 ALWAYS_INLINE void MOV_REG_IMM()						{ MOV_REG_16(dst, this->FETCH_WORD()); }
 
-ALWAYS_INLINE void MOV_REG8_ADDR(u8 dst, u16 address)	{ MOV_REG_8(dst, this->GET_BYTE(address)); }
+ALWAYS_INLINE void MOV_REG8_ADDR(Register dst, u16 address)	{ MOV_REG_8(dst, this->GET_BYTE(address)); }
 
 template<ComposedRegister dst, Register src>
 ALWAYS_INLINE void MOV_ADDR_REG_REG() 					{ MOV_ADDR_8(GET_COMPOSED_REG(dst), GET_REG(src)); }
