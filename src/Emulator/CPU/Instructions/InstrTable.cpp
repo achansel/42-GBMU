@@ -14,10 +14,11 @@ void CPU::fill_instructions_table()
 	i[0xFB] = &CPU::EI;
 	i[0x76] = &CPU::HALT;
 
-	i[0x07] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RLC, RegisterA>;
-	i[0x17] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RL, RegisterA>;
-	i[0x0F] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RRC, RegisterA>;
-	i[0x1F] = &CPU::PREFIXED_OP_REG<PREFIXEDOP::RR, RegisterA>;
+	/* No use of PREFIXED_OP_REG here because the instructions, when executed from the non-prefixed opcodes, set the Z flag to 0 */
+	i[0x07] = &CPU::RLCA;
+	i[0x17] = &CPU::RLA;
+	i[0x0F] = &CPU::RRCA;
+	i[0x1F] = &CPU::RRA;
 
 	i[0xC7] = &CPU::RST<0x00>;
 	i[0xCF] = &CPU::RST<0x08>;

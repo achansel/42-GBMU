@@ -2,11 +2,29 @@
 template<int SIGN, int CARRY>
 ALWAYS_INLINE void ADD_A_8(u8 operand)	
 {
-	u16 res = GET_FLAG(CarryFlag) * CARRY + operand * SIGN + GET_REG(RegisterA);
+	u8	a = GET_REG(RegisterA);
+	u8	carry = GET_FLAG(CarryFlag) * CARRY;
+	u16 res;
+
+	if constexpr (SIGN == -1)
+		res = a - operand - carry;
+	else
+		res = a + operand + carry;
+
 	SET_FLAG(ZeroFlag, static_cast<u8>(res) == 0);
-	SET_FLAG(SubstractFlag, SIGN == -1);
-	SET_FLAG(HalfCarryFlag, (res >> 4) & 1);
-	SET_FLAG(CarryFlag, (res >> 8) & 1);
+	if constexpr (SIGN == -1)
+	{
+		SET_FLAG(SubstractFlag, 1);
+		SET_FLAG(HalfCarryFlag, (a & 0xF) < (operand & 0xF) + carry);
+	}
+	else
+	{
+		SET_FLAG(SubstractFlag, 0);
+		SET_FLAG(HalfCarryFlag, ((a & 0xF) + (operand & 0xF)) + carry > 0xF);
+	}
+
+	SET_FLAG(CarryFlag,	(res >> 8) != 0);
+
 	SET_REG(RegisterA, static_cast<u8>(res));
 }
 
@@ -88,9 +106,9 @@ template<ComposedRegister reg>
 void INC_REG() 								{ m_tclock += 4; INC_COMPOSED_REG(reg); }
 
 template<Register reg>
-void DEC_REG()  							{ DEC_REG(reg); SET_FLAG(ZeroFlag, GET_REG(reg) == 0); SET_FLAG(SubstractFlag, 1); SET_FLAG(HalfCarryFlag, (GET_REG(reg) >> 4) & 1); }
+void DEC_REG()  							{ DEC_REG(reg); SET_FLAG(ZeroFlag, GET_REG(reg) == 0); SET_FLAG(SubstractFlag, 1); SET_FLAG(HalfCarryFlag, (GET_REG(reg) & 0xF) == 0xF); }
 template<Register reg>
-void INC_REG() 								{ INC_REG(reg); SET_FLAG(ZeroFlag, GET_REG(reg) == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, (GET_REG(reg) >> 4) & 1); }
+void INC_REG() 								{ INC_REG(reg); SET_FLAG(ZeroFlag, GET_REG(reg) == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, (GET_REG(reg) & 0xF) == 0x00); }
 
 void DEC_ADDR_HL()							{ u16 address = GET_COMPOSED_REG(RegisterHL); u8 b = GET_BYTE(address) - 1; SET_FLAG(ZeroFlag, b == 0); SET_FLAG(SubstractFlag, 1); SET_FLAG(HalfCarryFlag, (b >> 4) & 1); WRITE_BYTE(address, b); }
 void INC_ADDR_HL()							{ u16 address = GET_COMPOSED_REG(RegisterHL); u8 b = GET_BYTE(address) + 1; SET_FLAG(ZeroFlag, b == 0); SET_FLAG(SubstractFlag, 0); SET_FLAG(HalfCarryFlag, (b >> 4) & 1); WRITE_BYTE(address, b); }

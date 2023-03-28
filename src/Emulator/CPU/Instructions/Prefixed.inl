@@ -1,9 +1,13 @@
+template<bool main_instruction_set = false>
 u8 RLC(u8 operand)
 {
 	u8 a = operand;
 	a = (a << 1) | (a >> 7);
 
-	SET_FLAG(ZeroFlag, a == 0);
+	if constexpr (main_instruction_set)
+		SET_FLAG(ZeroFlag, 0);
+	else
+		SET_FLAG(ZeroFlag, a == 0);
 	SET_FLAG(SubstractFlag, 0);
 	SET_FLAG(HalfCarryFlag, 0);
 	SET_FLAG(CarryFlag, (a >> 0) & 1);
@@ -11,12 +15,16 @@ u8 RLC(u8 operand)
 	return (a);
 }
 
+template<bool main_instruction_set = false>
 u8 RRC(u8 operand)
 {
 	u8 a = operand;
 	a = (a >> 1) | (a << 7);
 
-	SET_FLAG(ZeroFlag, a == 0);
+	if constexpr (main_instruction_set)
+		SET_FLAG(ZeroFlag, 0);
+	else
+		SET_FLAG(ZeroFlag, a == 0);
 	SET_FLAG(SubstractFlag, 0);
 	SET_FLAG(HalfCarryFlag, 0);
 	SET_FLAG(CarryFlag, (a >> 7) & 1); //maybe wrong swap & 1 and & 0x80
@@ -24,12 +32,16 @@ u8 RRC(u8 operand)
 	return (a);
 }
 
+template<bool main_instruction_set = false>
 u8 RL(u8 operand)
 {
 	u8 a = operand;
 	a = (a << 1) | (GET_FLAG(CarryFlag) << 0);
 
-	SET_FLAG(ZeroFlag, a == 0);
+	if constexpr (main_instruction_set)
+		SET_FLAG(ZeroFlag, 0);
+	else
+		SET_FLAG(ZeroFlag, a == 0);
 	SET_FLAG(SubstractFlag, 0);
 	SET_FLAG(HalfCarryFlag, 0);
 	SET_FLAG(CarryFlag, (operand >> 7) & 1); //maybe wrong swap & 1 and & 0x80
@@ -37,18 +49,27 @@ u8 RL(u8 operand)
 	return (a);
 }
 
+template<bool main_instruction_set = false>
 u8 RR(u8 operand)
 {
 	u8 a = operand;
 	a = (a >> 1) | (GET_FLAG(CarryFlag) << 7);
 
-	SET_FLAG(ZeroFlag, a == 0);
+	if constexpr (main_instruction_set)
+		SET_FLAG(ZeroFlag, 0);
+	else
+		SET_FLAG(ZeroFlag, a == 0);
 	SET_FLAG(SubstractFlag, 0);
 	SET_FLAG(HalfCarryFlag, 0);
 	SET_FLAG(CarryFlag, operand & 1); //maybe wrong swap & 1 and & 0x80
 
 	return (a);
 }
+
+void RRA(void)	{ SET_REG(RegisterA, RR<true>(GET_REG(RegisterA)));  }
+void RLA(void)	{ SET_REG(RegisterA, RL<true>(GET_REG(RegisterA)));  }
+void RRCA(void) { SET_REG(RegisterA, RRC<true>(GET_REG(RegisterA))); }
+void RLCA(void) { SET_REG(RegisterA, RLC<true>(GET_REG(RegisterA))); }
 
 u8 SRA(u8 operand)
 {
