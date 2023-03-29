@@ -46,7 +46,7 @@ u8 MMU::get_byte_at(u16 memory_location)
         case 0xF000:
 			/* OAM is actually not that wide, but since the region above is normally ummapped, we can return anything and its fine */
 			if (memory_location < 0xFF00)
-                return m_emu->get_lcd().read_byte_at_oam(memory_location & 0x9F);
+                		return m_emu->get_lcd().read_byte_at_oam(memory_location & 0x9F);
 
 			else if (memory_location < 0xFF80)
             {
