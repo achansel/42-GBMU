@@ -354,6 +354,7 @@ void LCD::renderscan()
 			}
 		}
 		std::stable_sort(selection.begin(), selection.end(), [](const std::reference_wrapper<Sprite> &a, const std::reference_wrapper<Sprite> &b) { return (a.get().x < b.get().x); });
+		std::remove_if(selection.begin(), selection.end(), [](const auto &a) { return (a.get().x <= 0 || a.get().x >= 168); });
 	}
 
 
