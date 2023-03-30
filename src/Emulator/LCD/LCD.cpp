@@ -51,20 +51,20 @@ void LCD::update(u8 t)
             case Mode::LINE_SPRITES:
                 if (m_modeclock >= 80) {
                     m_mode = Mode::LINE_BACKGROUND;
-                    m_modeclock = 0;
+                    m_modeclock -= 80;
                 }
                 break;
             case Mode::LINE_BACKGROUND:
                 if (m_modeclock >= 172) {
                     m_mode = Mode::HBLANK;
-                    m_modeclock = 0;
+                    m_modeclock -= 172;
 					renderscan();
 					request_interrupts(false);
                 }
                 break;
             case Mode::HBLANK:
                 if (m_modeclock >= 204) {
-                    m_modeclock = 0;
+                    m_modeclock -= 204;
                     m_line++;
                     if (m_line == 144) {
 		                need_to_draw = true;
@@ -82,7 +82,7 @@ void LCD::update(u8 t)
                 break;
             case Mode::VBLANK:
                 if (m_modeclock >= 456) {
-                    m_modeclock = 0;
+                    m_modeclock -= 456;
                     m_line++;
                     if (m_line > 153) {
 						m_window_line = 0;

@@ -55,7 +55,8 @@ private:
 
     u32 m_framebuffer[144*160];
 
-    int m_modeclock, m_line = 1;
+	int m_modeclock = 0;
+    int m_line = 1;
     Mode m_mode = Mode::LINE_BACKGROUND;
 
     bool m_bgmap, m_bgwintile, m_bgwinon, m_lcdon;
