@@ -33,8 +33,9 @@ void Timer::step(u8 tcycles)
 	else 
 		return ;
 	
+	m_register_tima++;
 	// Timer overflow
-	if (m_register_tima == 0xFF)
+	if (!m_register_tima)
 	{
 		m_emu->get_CPU().request_interrupt(CPU::Interrupt::TIMER);
 		m_register_tima = m_register_tma;
