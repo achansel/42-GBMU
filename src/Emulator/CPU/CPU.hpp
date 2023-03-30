@@ -34,6 +34,8 @@ public:
 
 	u8 read_if();
 	void write_if(u8 val);
+
+	void check_and_service_interrupts();
 	void request_interrupt(Interrupt i);
 
 	u8 read_ie();
@@ -51,9 +53,6 @@ public:
 private:
 	typedef void (CPU::*InstructionPtr)(void);
 
-    void step_lcd();
-	void step_timer();
-
 	void fetch_instruction();
     void execute_next_instruction();
     void saveafterinstruction();
@@ -70,6 +69,8 @@ private:
 	u8 m_ie_reg;
 	u8 m_if_reg;
 	bool m_ime;
+
+	bool m_halted;
     
     u8 m_opcode;
 

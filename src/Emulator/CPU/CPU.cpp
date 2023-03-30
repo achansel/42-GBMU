@@ -6,7 +6,7 @@
 CPU::CPU(Emulator* emu)
 {
     m_emu = emu;
-    m_regs[7] = 1;
+	m_halted = false;
 
 	fill_instructions_table();
 	fill_instructions_table_cb();
@@ -21,9 +21,10 @@ void CPU::tick()
 	while (m_emu->get_lcd().need_to_draw && !m_exit)
 		;
     execute_next_instruction();
+
     //saveafterinstruction();
-    step_lcd();
-	step_timer();
+    m_emu->get_lcd().update(m_tclock);
+	m_emu->get_timer().update(m_tclock);
 	m_tclock = 0;
 }
 
@@ -58,16 +59,6 @@ void CPU::debug_stop()
 
 }
 
-inline void CPU::step_lcd()
-{
-    m_emu->get_lcd().update(m_tclock);
-}
-
-inline void CPU::step_timer()
-{
-	m_emu->get_timer().step(m_tclock);
-}
-
 inline void CPU::fetch_instruction()
 {
     m_opcode = m_emu->get_MMU().get_byte_at(PC);
@@ -76,33 +67,49 @@ inline void CPU::fetch_instruction()
 
 inline void CPU::execute_next_instruction()
 {
-	fetch_instruction();
+	/* Check and handle interrupts if the previous instruction was not EI or RETI */
+	if (m_opcode != 0xFB && m_opcode != 0xD9)
+		check_and_service_interrupts();
 
-    // Extended opcode table
+	/* If the CPU is halted here, that means no interrupts were handled, add 4 to t_clock to allow the screen and the timer to step */
+	if (m_halted)
+	{
+		m_tclock += 4;
+		return ;
+	}
+
+	/* Execute the next instruction */
+	fetch_instruction();
     if (m_opcode == 0xCB)
     {
         fetch_instruction();
 		auto operation = m_instructions_cb[m_opcode];
 		(this->*operation)();
     }
-    // Standard opcode table
     else
     {
 		auto operation = m_instructions[m_opcode];
 		(this->*operation)();
     }
+}
 
-	// Quick hack to not service interrupt right after it was enabled
-	// TODO: IMRPOVE (HERE EI AND RETI)
-	if (m_opcode == 0xFB || m_opcode == 0xD9)
+
+//TODO: HALT BUG
+void CPU::check_and_service_interrupts()
+{
+	/* No interrupts to handle ? -> return */
+	u8 masked = m_ie_reg & m_if_reg;
+	if (!masked)
 		return ;
 
-	// We have to handle an interrupt
-	if (m_ime && (m_ie_reg & m_if_reg))
+	/* Unhalt the CPU */
+	if (m_halted)
+		m_halted = false;
+
+	// Handle the interrupt, while taking the priority into account
+	if (m_ime)
 	{
 		// Maybe use for loop
-		u8 masked = m_ie_reg & m_if_reg;
-
 		if (masked & Interrupt::VBLANK)
 			service_interrupt(Interrupt::VBLANK);
 		else if (masked & Interrupt::STAT)
@@ -118,9 +125,6 @@ inline void CPU::execute_next_instruction()
 
 void CPU::service_interrupt(Interrupt i)
 {
-	if (i != VBLANK)
-		std::cout << "GBMU: CPU: INTERRUPT " << i << " WAS SERVICED\n";
-
 	// NOPS
 	NOP();
 	NOP();

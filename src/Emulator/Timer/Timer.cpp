@@ -8,7 +8,7 @@ Timer::Timer(Emulator *emu)
 	m_enabled(false)
 {}
 
-void Timer::step(u8 tcycles)
+void Timer::update(u8 tcycles)
 {
 	m_tclock += tcycles;
 	m_dclock += tcycles;

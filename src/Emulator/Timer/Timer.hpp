@@ -8,7 +8,7 @@ class Timer {
 public:
 	Timer(Emulator *emu);
 
-	void	step(u8 tcycles);
+	void	update(u8 tcycles);
 
 	void	write_byte(u16 address, u8 value);
 	u8		read_byte(u16 address);
