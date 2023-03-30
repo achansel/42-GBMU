@@ -30,7 +30,6 @@ void CALL_IMM16()			{ u16 a = FETCH_WORD(); if (CHECK_COND<cond>()) _CALL(a); }
 template<u16 address>
 void RST()					{ _CALL(address); }
 
-/* TODO: FIX TIMINGS */
 template<Cond cond = Cond::NONE>
 void JUMP_IMM16()			{ u16 a = FETCH_WORD(); if (CHECK_COND<cond>()) _JUMP(a); }
 void JUMP_HL()				{ _JUMP(GET_COMPOSED_REG(RegisterHL)); }

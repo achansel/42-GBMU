@@ -28,11 +28,11 @@ void LCD::init_dma_transfer()
 
 
 // TODO: Fix interrupts and maybe timings so that TLOZ Links Awakening works
-void LCD::request_interrupts()
+void LCD::request_interrupts(bool newline)
 {
     if (m_mode == Mode::VBLANK)
 		m_emu->get_CPU().request_interrupt(CPU::Interrupt::VBLANK);
-	if ((m_stat_int_sources & 0x8) && m_line == m_lyc)
+	if ((m_stat_int_sources & 0x8) && m_line == m_lyc && newline)
 		m_emu->get_CPU().request_interrupt(CPU::Interrupt::STAT);
 	if (m_mode != LINE_BACKGROUND
 		&& (static_cast<u8>(1 << m_mode) & m_stat_int_sources))
@@ -59,7 +59,7 @@ void LCD::update(u8 t)
                     m_mode = Mode::HBLANK;
                     m_modeclock = 0;
 					renderscan();
-					request_interrupts();
+					request_interrupts(false);
                 }
                 break;
             case Mode::HBLANK:
@@ -69,11 +69,11 @@ void LCD::update(u8 t)
                     if (m_line == 144) {
 		                need_to_draw = true;
                         m_mode = Mode::VBLANK;
-						request_interrupts();
+						request_interrupts(true);
                     } 
                     else {
                         m_mode = Mode::LINE_SPRITES;
-                        request_interrupts();
+                        request_interrupts(true);
 						if (m_windowon && m_wy == m_line)
 							m_should_display_window = true;
                     }
@@ -88,7 +88,7 @@ void LCD::update(u8 t)
 						m_window_line = 0;
                         m_line = 0;
                         m_mode = Mode::LINE_SPRITES;
-                        request_interrupts();
+                        request_interrupts(true);
 						m_should_display_window = m_windowon && (m_wy == m_line);
                     }
                 }

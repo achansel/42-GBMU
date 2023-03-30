@@ -32,7 +32,7 @@ public:
 private:
 	Emulator *m_emu;
 
-	void request_interrupts();
+	void request_interrupts(bool newline);
     void renderscan();
 
 	/* TODO: Implement blocking of whole address space but HRAM during DMA Transfer */
