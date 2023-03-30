@@ -60,7 +60,7 @@ u8 MMU::get_byte_at(u16 memory_location)
                     return m_emu->get_lcd().read_byte(memory_location);
                 else if (!(memory_location >= 0xFF10 && memory_location < 0xFF40))
 				{
-					std::cout << "GBMU: MMU: READ TO UNKNOWN/UNIMPLMENTED IO REGISTER " << std::hex << memory_location << std::endl;
+					//std::cout << "GBMU: MMU: READ TO UNKNOWN/UNIMPLMENTED IO REGISTER " << std::hex << memory_location << std::endl;
 					return (0);
 				}
 	        }
@@ -127,6 +127,8 @@ void MMU::set_byte_at(u16 memory_location, u8 value) {
             {
 				if (memory_location == 0xFF00)
 					m_emu->get_joypad().write_byte(value);
+				if (memory_location == 0xFF01)
+					std::cout << value;
 				else if (memory_location >= 0xFF04 && memory_location <= 0xFF07)
 					m_emu->get_timer().write_byte(memory_location, value);
 				else if (memory_location == 0xFF0F)
@@ -136,7 +138,9 @@ void MMU::set_byte_at(u16 memory_location, u8 value) {
 				else if (memory_location == 0xFF50 && m_bios_mapped)
 					m_bios_mapped = !value;
                 else if (!(memory_location >= 0xFF10 && memory_location < 0xFF40))
-					std::cout << "GBMU: MMU: WRITE TO UNKNOWN/UNIMPLMENTED IO REGISTER " << std::hex << memory_location << ", VALUE: " << +value << std::endl;
+				{
+					//std::cout << "GBMU: MMU: WRITE TO UNKNOWN/UNIMPLMENTED IO REGISTER " << std::hex << memory_location << ", VALUE: " << +value << std::endl;
+				}
 	        }
 
 			else if (memory_location < 0xFFFF)

@@ -32,12 +32,12 @@ void RST()					{ _CALL(address); }
 
 template<Cond cond = Cond::NONE>
 void JUMP_IMM16()			{ u16 a = FETCH_WORD(); if (CHECK_COND<cond>()) _JUMP(a); }
-void JUMP_HL()				{ _JUMP(GET_COMPOSED_REG(RegisterHL)); }
+void JUMP_HL()				{ _JUMP(GET_COMPOSED_REG(RegisterHL)); m_tclock -= 4; }
 
 template<Cond cond = Cond::NONE>
 void JR_IMM8()				{ s8 a = static_cast<s8>(FETCH_BYTE()); if (CHECK_COND<cond>()) _JUMP(PC + a); }
 
 template<Cond cond = Cond::NONE>
-void RET()					{ m_tclock += 4; if constexpr (cond != Cond::NONE) m_tclock += 4; if (CHECK_COND<cond>()) _RET(); }
+void RET()					{ m_tclock += 4; if (CHECK_COND<cond>()) { if (cond != Cond::NONE) m_tclock += 4; _RET(); } }
 void RETI()					{ m_tclock += 4; _RET(); m_ime = true; }
 

@@ -52,7 +52,7 @@ void CPU::fill_instructions_table()
 	i[0xD0] = &CPU::RET<Cond::NC>;
 	i[0xC8] = &CPU::RET<Cond::Z>;
 	i[0xD8] = &CPU::RET<Cond::C>;
-	i[0xC9] = &CPU::RET;
+	i[0xC9] = &CPU::RET<Cond::NONE>;
 	i[0xD9] = &CPU::RETI;
 
 

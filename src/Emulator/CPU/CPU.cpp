@@ -21,7 +21,6 @@ void CPU::tick()
 	while (m_emu->get_lcd().need_to_draw && !m_exit)
 		;
     execute_next_instruction();
-
     //saveafterinstruction();
     m_emu->get_lcd().update(m_tclock);
 	m_emu->get_timer().update(m_tclock);
@@ -70,7 +69,7 @@ inline void CPU::execute_next_instruction()
 	/* Check and handle interrupts if the previous instruction was not EI or RETI */
 	if (m_opcode != 0xFB && m_opcode != 0xD9)
 		check_and_service_interrupts();
-
+	
 	/* If the CPU is halted here, that means no interrupts were handled, add 4 to t_clock to allow the screen and the timer to step */
 	if (m_halted)
 	{

@@ -10,7 +10,6 @@ Timer::Timer(Emulator *emu)
 
 void Timer::update(u8 tcycles)
 {
-	m_tclock += tcycles;
 	m_dclock += tcycles;
 
 	if (!m_emu->get_CPU().is_stopped() && m_dclock >= Timer::s_div_register_clocks)
@@ -21,6 +20,7 @@ void Timer::update(u8 tcycles)
 
 	if (!m_enabled)
 		return ;
+	m_tclock += tcycles;
 
 	if (m_clock_speed == FREQ_262144HZ && m_tclock >= s_262144hz)
 		m_tclock -= s_262144hz;
@@ -58,8 +58,9 @@ void Timer::write_byte(u16 address, u8 value)
 			m_register_tma = value;
 			break ;
 		case 0xFF07:
-			//m_tclock		= 0; //maybe needs removal?
 			m_enabled		= (value >> 2) & 1;
+			if (!m_enabled)
+				m_tclock = 0;
 			m_clock_speed	= static_cast<ClockSpeed>((value >> 0) & 3);
 			break ;
 	}
