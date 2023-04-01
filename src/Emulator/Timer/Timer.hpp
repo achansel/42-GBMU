@@ -1,10 +1,11 @@
 #pragma once
 
 #include <Emulator/Util/Types.hpp>
+#include <Emulator/Memory/IMMIO.hpp>
 
 class Emulator;
 
-class Timer {
+class Timer : public IMMIO {
 public:
 	Timer(Emulator *emu);
 

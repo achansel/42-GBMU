@@ -5,9 +5,16 @@ class Emulator;
 #include <array>
 #include <memory>
 #include <cstdio>
-#include "../Util/Types.hpp"
+#include <algorithm>
+#include <vector>
+#include <functional>
 
-class MMU {
+#include <Emulator/Memory/IMMIO.hpp>
+#include <Emulator/Util/Types.hpp>
+
+using namespace std::placeholders;
+
+class MMU : public IMMIO {
 public:
     MMU(Emulator *emu);
 
@@ -18,10 +25,68 @@ public:
     void set_byte_at(u16 memory_location, u8 value);
     void set_word_at(u16 memory_location, u16 value);
 
-    Emulator				*m_emu;
-	bool					m_bios_mapped;
+    u8      read_byte(u16 address) { (void) address; return (0xFF); };
+    void    write_byte(u16 address, u8 value) { (void) address; (void) value; };
+
 private:
-	std::array<u8, 0x80>	m_hram {};
+    template<typename Device, typename read_func = std::function<u8(Device *, u16)>, typename write_func = std::function<void(Device *, u16, u8)> >
+    void    register_range(u16 low, u16 size, Device *obj, read_func custom_read = &Device::read_byte, write_func custom_write = &Device::write_byte)
+    {
+        std::function<u8(u16)>       read = std::bind(custom_read, obj, _1);
+        std::function<void(u16, u8)> write = std::bind(custom_write, obj, _1, _2);
+
+        MemoryRegion r(low, size, read, write);
+        m_memory_map.push_back(r);
+    }
+
+    bool        unmap_range(u16 low, u16 high);
+    void        unmap_bootrom();
+
+    u8          read_bootrom(u16 address);
+    void        write_bootrom(u16 address, u8 value);
+
+    u8          read_ioreg(u16 memory_location);
+    void        write_ioreg(u16 address, u8 value);
+
+    u8          read_byte_at_hram(u16 address);
+    void        write_byte_at_hram(u16 address, u8 value);
+
+    Emulator	*m_emu;
+	bool		m_bios_mapped;
+
+    struct MemoryRegion {
+        MemoryRegion(u16 begin, u16 size, std::function<u8(u16)> read_func, std::function<void(u16, u8)> write_func)
+            : m_begin(begin), m_size(size), m_read_func(read_func), m_write_func(write_func)
+        {}
+
+        bool operator<(const MemoryRegion &rhs)
+        {
+            return (this->m_begin < rhs.m_begin);
+        }
+
+        u8      read(u16 address)
+        {
+            return (m_read_func(address));
+        }
+        void    write(u16 address, u8 value)
+        {
+            m_write_func(address, value);
+        }
+
+        bool    is_within(const u16 address) { return (address >= m_begin && address < (m_begin + m_size)); }
+
+        u16                 m_begin;
+        u16                 m_size;
+
+        IMMIO                                   *m_object;
+        std::function<u8(u16)>                  m_read_func;
+        std::function<void(u16, u8)>            m_write_func;
+    };
+
+    //TODO: Maybe use a sort of tree to optimize memory accesses.
+    std::vector<MemoryRegion>   m_memory_map;
+	std::array<u8, 0x80>        m_hram {};
+
 
     u8 dmg_bios[0x100] = {
         0x31, 0xfe, 0xff, 0xaf, 0x21, 0xff, 0x9f, 0x32, 0xcb, 0x7c, 0x20, 0xfb,

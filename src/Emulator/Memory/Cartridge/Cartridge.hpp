@@ -12,6 +12,8 @@
 #include <Emulator/Memory/Cartridge/Mapper/MBC5.hpp>
 #include <Emulator/Memory/Cartridge/Mapper/MBC1.hpp>
 
+#include <Emulator/Memory/IMMIO.hpp>
+
 enum class CartridgeType {
 	ROM_ONLY						= 0x00,
 	MBC1							= 0x01,
@@ -43,7 +45,7 @@ enum class CartridgeType {
 	HUC1_RAM_BATTERY				= 0xFF,
 };
 
-class Cartridge {
+class Cartridge : public IMMIO {
 public:
     explicit Cartridge(const std::string& path_to_game);
     ~Cartridge();

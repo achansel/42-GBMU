@@ -4,6 +4,8 @@
 #include <array>
 #include <cstdio>
 
+#include <Emulator/Memory/IMMIO.hpp>
+
 #include <Emulator/Util/Types.hpp>
 
 class Emulator;
@@ -14,7 +16,7 @@ enum Register {RegisterB = 0, RegisterC = 1, RegisterD = 2, RegisterE = 3, Regis
 enum ComposedRegister {RegisterBC = 0x01, RegisterDE = 0x23, RegisterHL = 0x45, RegisterAF = 0x76, RegisterSP = 0x98};
 enum Flag {ZeroFlag = 7, SubstractFlag = 6, HalfCarryFlag = 5, CarryFlag = 4};
 
-class CPU {
+class CPU : public IMMIO {
 public:
 	enum Interrupt {
 		VBLANK	= 1 << 0,
@@ -29,8 +31,8 @@ public:
 
     void tick();
 
-    u8 read_byte_at_working_ram(u16 position);
-    void write_byte_at_working_ram(u16 position, u8 value);
+    u8 read_byte(u16 position);
+    void write_byte(u16 position, u8 value);
 
 	u8 read_if();
 	void write_if(u8 val);
@@ -38,8 +40,8 @@ public:
 	void check_and_service_interrupts();
 	void request_interrupt(Interrupt i);
 
-	u8 read_ie();
-	void write_ie(u8 value);
+	u8 read_ie(u16 address);
+	void write_ie(u16 address, u8 value);
 
     u32 m_mclock = 0, m_tclock = 0;
     bool m_exit;

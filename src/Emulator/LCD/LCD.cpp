@@ -148,7 +148,8 @@ u8 LCD::read_byte(u16 memory_loc) {
     }
 }
 
-u8 LCD::read_byte_at_oam(u8 memory_loc) {
+u8 LCD::read_byte_at_oam(u16 memory_loc) {
+	memory_loc &= 0x9F;
     Sprite &s = m_sprites[memory_loc >> 2];
 
 	switch (memory_loc & 3)
@@ -173,6 +174,8 @@ u8 LCD::read_byte_at_oam(u8 memory_loc) {
 void LCD::write_byte(u16 memory_loc, u8 value) {
     if (memory_loc < 0xA000) {
         m_video_ram[(memory_loc & 0x1FFF)] = value;
+		if (memory_loc <= 0x9800)
+			updatetile(memory_loc);
     }
     else
     {
@@ -278,7 +281,8 @@ void LCD::write_byte(u16 memory_loc, u8 value) {
     }
 }
 
-void LCD::write_byte_at_oam(u8 memory_loc, u8 value) {
+void LCD::write_byte_at_oam(u16 memory_loc, u8 value) {
+	memory_loc &= 0x9F;
 	Sprite &s = m_sprites[memory_loc >> 2];
 
 	switch (memory_loc & 3)

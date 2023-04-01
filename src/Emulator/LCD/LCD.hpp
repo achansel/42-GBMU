@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include <Emulator/Util/Types.hpp>
+#include <Emulator/Memory/IMMIO.hpp>
 
 class Emulator;
 
@@ -12,7 +13,7 @@ enum Mode
     HBLANK = 0, VBLANK = 1, LINE_SPRITES = 2, LINE_BACKGROUND = 3
 };
 
-class LCD {
+class LCD : public IMMIO {
 public:
     LCD(Emulator *emu);
 
@@ -20,10 +21,10 @@ public:
     void *get_fb();
 
     u8 read_byte(u16 memory_loc);
-    u8 read_byte_at_oam(u8 memory_loc);
+    u8 read_byte_at_oam(u16 memory_loc);
 
     void write_byte(u16 memory_loc, u8 value);
-    void write_byte_at_oam(u8 memory_loc, u8 value);
+    void write_byte_at_oam(u16 memory_loc, u8 value);
 
     void reset();
     void updatetile(u16 addr);

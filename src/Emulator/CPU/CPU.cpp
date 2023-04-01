@@ -152,15 +152,15 @@ u8 CPU::read_if() { return (m_if_reg); }
 void CPU::write_if(u8 value) { m_if_reg = value; }
 void CPU::request_interrupt(Interrupt i) { m_if_reg |= static_cast<u8>(i); }
 
-u8 CPU::read_ie() { return (m_ie_reg); }
-void CPU::write_ie(u8 value) { m_ie_reg = value; }
+u8 CPU::read_ie(u16 address) { (void) address; return (m_ie_reg); }
+void CPU::write_ie(u16 address, u8 value) { (void) address; m_ie_reg = value; }
 
 
-u8 CPU::read_byte_at_working_ram(u16 position) {
-    return m_working_ram[position];
+u8 CPU::read_byte(u16 position) {
+    return m_working_ram[position & 0x1FFF];
 }
 
 
-void CPU::write_byte_at_working_ram(u16 position, u8 value) {
-    m_working_ram[position] = value;
+void CPU::write_byte(u16 position, u8 value) {
+    m_working_ram[position & 0x1FFF] = value;
 }
