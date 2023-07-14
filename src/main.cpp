@@ -15,7 +15,7 @@ int init_window(const std::string &rom)
     int rendererFlags;
 	rendererFlags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0)
 	{
 		printf("Couldn't initialize SDL: %s\n", SDL_GetError());
 		exit(1);
@@ -42,22 +42,23 @@ int init_window(const std::string &rom)
         printf("Failed to create texture: %s\n", SDL_GetError());
         exit(1);
     }
-    return (0);
-}
 
-bool handle_events(Emulator &emu)
-{
-	SDL_Event e;
-	while (SDL_PollEvent(&e))
-	{
-		if (e.type == SDL_QUIT)
-		{
-			emu.get_CPU().m_exit = true;
-			return (false);
+	SDL_GameController* controller = nullptr;
+	for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+		if (SDL_IsGameController(i)) {
+			controller = SDL_GameControllerOpen(i);
+			if (controller != nullptr) {
+				break;
+			}
 		}
-		if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) emu.get_joypad().update(e);
 	}
-	return (true);
+
+	if (controller == nullptr) {
+		// Error if no controller is found
+		std::cout << "GBMU: NO CONTROLLER FOUND" << std::endl;
+	}
+
+    return (0);
 }
 
 int main(int argc, char** argv)
@@ -80,7 +81,8 @@ int main(int argc, char** argv)
 		{
 			if (e.type == SDL_QUIT)
 				emu.get_CPU().m_exit = true;
-			if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP) emu.get_joypad().update(e);
+			else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP || e.type == SDL_CONTROLLERBUTTONDOWN || e.type == SDL_CONTROLLERBUTTONUP)
+				emu.get_joypad().update(e);
 		}
 
 		/* Draw if needed */

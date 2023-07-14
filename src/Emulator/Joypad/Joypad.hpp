@@ -20,6 +20,9 @@ private:
     void    key_up(SDL_Event e);
     void    key_down(SDL_Event e);
 
+    void    controller_up(SDL_Event e);
+    void    controller_down(SDL_Event e);
+
 	Emulator	*m_emu;
 
     u8 m_column;
