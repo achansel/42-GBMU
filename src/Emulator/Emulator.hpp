@@ -26,9 +26,9 @@ public:
     Joypad& get_joypad();
 private:
     Cartridge m_cartridge;
-    MMU m_mmu;
     CPU m_cpu;
     Joypad m_joypad;
     LCD m_lcd;
 	Timer m_timer;
+    MMU m_mmu;
 };

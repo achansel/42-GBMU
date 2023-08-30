@@ -8,6 +8,9 @@ CPU::CPU(Emulator* emu)
     m_emu = emu;
 	m_halted = false;
 
+	PC=0;
+	m_exit=false;
+
 	fill_instructions_table();
 	fill_instructions_table_cb();
 }

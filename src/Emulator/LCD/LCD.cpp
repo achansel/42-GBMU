@@ -149,7 +149,7 @@ u8 LCD::read_byte(u16 memory_loc) {
 }
 
 u8 LCD::read_byte_at_oam(u16 memory_loc) {
-	memory_loc &= 0x9F;
+	memory_loc &= 0xFF;
     Sprite &s = m_sprites[memory_loc >> 2];
 
 	switch (memory_loc & 3)
@@ -282,7 +282,7 @@ void LCD::write_byte(u16 memory_loc, u8 value) {
 }
 
 void LCD::write_byte_at_oam(u16 memory_loc, u8 value) {
-	memory_loc &= 0x9F;
+	memory_loc &= 0xFF;
 	Sprite &s = m_sprites[memory_loc >> 2];
 
 	switch (memory_loc & 3)
@@ -323,6 +323,9 @@ void LCD::updatetile(u16 addr) {
     int		y   = (addr >> 1) & 7;
 
 
+	if (tile == 384)
+		return ;
+
     for (int x = 0; x < 8; x++)
     {
         unsigned char bitmask = 1 << (7 - x);
@@ -334,12 +337,10 @@ void LCD::updatetile(u16 addr) {
 void LCD::renderscan()
 {
 	std::vector<std::reference_wrapper<Sprite>>				selection;
-	size_t													selection_idx;
 
 	// Select sprites
 	if (m_spriteon)
 	{
-		selection_idx = 0;
 		selection.reserve(10);
 		
 		// Fetch sprites that need to be drawn
@@ -358,9 +359,10 @@ void LCD::renderscan()
 			}
 		}
 		std::stable_sort(selection.begin(), selection.end(), [](const std::reference_wrapper<Sprite> &a, const std::reference_wrapper<Sprite> &b) { return (a.get().x < b.get().x); });
-		std::remove_if(selection.begin(), selection.end(), [](const auto &a) { return (a.get().x <= 0 || a.get().x >= 168); });
+		std::erase_if(selection, [](const auto &a) { return (a.get().x <= 0 || a.get().x >= 168); });
 	}
 
+	size_t													selection_idx = 0;
 
     /* Select right tile map for the tile we are about to draw
 		if there is a window where we draw */

@@ -52,7 +52,7 @@ private:
 		bool	x_flip, y_flip;
 		u8		palette;
 	};
-	std::array<Sprite, 40>	m_sprites;
+	std::array<Sprite, 40>	m_sprites{};
 
     u32 m_framebuffer[144*160];
 
@@ -64,17 +64,17 @@ private:
 	bool m_spriteon, m_spritesz;
 	bool m_windowon, m_windowmap;
 
-	u8		m_wx, m_wy;
-	u8		m_window_line;
-    u8		m_scx, m_scy;
+	u8		m_wx=0, m_wy=0;
+	u8		m_window_line=0;
+    u8		m_scx=0, m_scy=0;
 	bool	m_should_display_window;
 
-	u8 m_lyc;
-	u8 m_stat_int_sources;
+	u8 m_lyc=0;
+	u8 m_stat_int_sources=0;
 
-	u8	m_dma;
+	u8	m_dma=0;
 	u16 m_dma_cycles_left = 0;
-	u8	m_dma_offset;
+	u8	m_dma_offset=0;
 
 
 	// https://lospec.com/palette-list

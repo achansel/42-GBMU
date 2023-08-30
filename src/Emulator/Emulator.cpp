@@ -4,11 +4,11 @@
 
 Emulator::Emulator(const std::string& path_to_game):
     m_cartridge(path_to_game),
-    m_mmu(this),
     m_cpu(this),
     m_joypad(this),
     m_lcd(this),
-	m_timer(this)
+	m_timer(this),
+    m_mmu(this)
 {
 }
 

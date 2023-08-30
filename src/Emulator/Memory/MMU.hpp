@@ -35,8 +35,7 @@ private:
         std::function<u8(u16)>       read = std::bind(custom_read, obj, _1);
         std::function<void(u16, u8)> write = std::bind(custom_write, obj, _1, _2);
 
-        MemoryRegion r(low, size, read, write);
-        m_memory_map.push_back(r);
+        m_memory_map.emplace_back(low, size, read, write);
     }
 
     bool        unmap_range(u16 low, u16 high);
@@ -64,21 +63,11 @@ private:
             return (this->m_begin < rhs.m_begin);
         }
 
-        u8      read(u16 address)
-        {
-            return (m_read_func(address));
-        }
-        void    write(u16 address, u8 value)
-        {
-            m_write_func(address, value);
-        }
-
         bool    is_within(const u16 address) { return (address >= m_begin && address < (m_begin + m_size)); }
 
         u16                 m_begin;
         u16                 m_size;
 
-        IMMIO                                   *m_object;
         std::function<u8(u16)>                  m_read_func;
         std::function<void(u16, u8)>            m_write_func;
     };

@@ -8,7 +8,7 @@ MMU::MMU(Emulator* emu)
     register_range(0x0100, 0x7F00, &m_emu->get_cartridge());
     register_range(0x8000, 0x2000, &m_emu->get_lcd());
     register_range(0xA000, 0x2000, &m_emu->get_cartridge(), &Cartridge::read_byte_at_ext_ram, &Cartridge::write_byte_at_ext_ram);
-    register_range(0xC000, 0x2000, &m_emu->get_CPU());
+    register_range(0xC000, 0x3DDF, &m_emu->get_CPU());
     register_range(0xFE00, 0xA0, &m_emu->get_lcd(), &LCD::read_byte_at_oam, &LCD::write_byte_at_oam);
     register_range(0xFF00, 0x80, this, &MMU::read_ioreg, &MMU::write_ioreg);
     register_range(0xFF80, 0x80, this, &MMU::read_byte_at_hram, &MMU::write_byte_at_hram);
@@ -83,8 +83,8 @@ bool    MMU::unmap_range(u16 low, u16 size)
 
 void    MMU::unmap_bootrom()
 {
-    //if (unmap_range(0x0000, 0x0100) & unmap_range(0x0100, 0x7F00))
-    //    register_range(0x0000, 0x8000, &m_emu->get_cartridge());
+    if (unmap_range(0x0000, 0x0100) & unmap_range(0x0100, 0x7F00))
+        register_range(0x0000, 0x8000, &m_emu->get_cartridge());
 }
 
 
@@ -93,7 +93,7 @@ u8 MMU::get_byte_at(u16 memory_location)
     for (auto &r : m_memory_map)
     {
         if (r.is_within(memory_location))
-            return (r.read(memory_location));
+            return (r.m_read_func(memory_location));
     }
     return (0xFF);
 }
@@ -112,7 +112,7 @@ void MMU::set_byte_at(u16 memory_location, u8 value)
     for (auto &r : m_memory_map)
     {
         if (r.is_within(memory_location))
-            r.write(memory_location, value);
+            r.m_write_func(memory_location, value);
     }
 }
 
